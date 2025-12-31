@@ -19,20 +19,20 @@ import {
 import { FormControl, FormLabel } from "@chakra-ui/form-control";
 import { Alert } from "@chakra-ui/alert";
 import { Divider } from "@chakra-ui/layout";
-import { Checkbox } from "@chakra-ui/checkbox";
-import { FiMail, FiLock, FiArrowRight } from "react-icons/fi";
+import { FiMail, FiLock, FiUser, FiArrowRight } from "react-icons/fi";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
-  const [usernameOrEmail, setUsernameOrEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Check if user is already logged in
   useEffect(() => {
-    // Try to fetch user profile to verify authentication
     const checkAuth = async () => {
       try {
         const response = await fetch("/api/auth/me", {
@@ -44,9 +44,7 @@ export default function LoginPage() {
         if (response.ok) {
           router.push("/dashboard");
         }
-        // If 401 or other error, user is not logged in - show login form
       } catch (err) {
-        // Network error, show login form
         console.error("Auth check error:", err);
       }
     };
@@ -54,46 +52,87 @@ export default function LoginPage() {
     checkAuth();
   }, [router]);
 
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
 
+    // Validation
+    if (!username.trim()) {
+      setError("Username is required");
+      setLoading(false);
+      return;
+    }
+
+    if (!email.trim()) {
+      setError("Email is required");
+      setLoading(false);
+      return;
+    }
+
+    if (!email.includes("@")) {
+      setError("Please enter a valid email");
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      setLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch("/api/auth/login", {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+      const response = await fetch(`${apiBaseUrl}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // ✅ Include cookies (HttpOnly)
+        credentials: "include",
         body: JSON.stringify({
-          username_or_email: usernameOrEmail,
+          username: username.trim(),
+          email: email.trim(),
           password: password,
-          remember_me: rememberMe, // ✅ Send remember_me flag
         }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        setError(data.detail || "Login failed. Please try again.");
+        setError(data.detail || data.message || "Signup failed. Please try again.");
         return;
       }
 
-      // ✅ Tokens are now stored in HttpOnly cookies by backend
-      // Backend extends expiration if remember_me is true
-      router.push("/dashboard");
+      setSuccess("Account created successfully! Redirecting to login...");
+
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     } catch (err) {
       setError("An error occurred. Please try again.");
-      console.error("Login error:", err);
+      console.error("Signup error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-
   return (
-    <Flex minH="100vh" align="center" justify="center" bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" px={{ base: 4, md: 0 }}>
+    <Flex
+      minH="100vh"
+      align="center"
+      justify="center"
+      bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+      px={{ base: 4, md: 0 }}
+    >
       <Container maxW={{ base: "sm", sm: "md" }} px={{ base: 0, md: 4 }}>
         <VStack gap={{ base: 4, md: 6 }} w="100%">
           {/* Brand Header */}
@@ -119,7 +158,7 @@ export default function LoginPage() {
             </Text>
           </VStack>
 
-          {/* Login Card */}
+          {/* Signup Card */}
           <Box
             w="100%"
             p={{ base: 6, md: 8 }}
@@ -145,13 +184,58 @@ export default function LoginPage() {
                 </Alert>
               )}
 
+              {/* Success Alert */}
+              {success && (
+                <Alert
+                  status="success"
+                  borderRadius="lg"
+                  bg="green.50"
+                  borderLeft="4px solid"
+                  borderColor="green.500"
+                >
+                  <Text color="green.700" fontSize={{ base: "xs", md: "sm" }}>
+                    {success}
+                  </Text>
+                </Alert>
+              )}
+
               {/* Form */}
               <form onSubmit={handleSubmit} style={{ width: "100%" }}>
                 <Stack gap={{ base: 4, md: 5 }}>
-                  {/* Username/Email Field */}
+                  {/* Username Field */}
                   <FormControl isRequired>
                     <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="600" color="gray.700">
-                      Username or Email
+                      Username
+                    </FormLabel>
+                    <HStack
+                      borderRadius="lg"
+                      border="2px solid"
+                      borderColor="gray.200"
+                      px={{ base: 2, md: 3 }}
+                      py={{ base: 2, md: 2 }}
+                      transition="all 0.2s"
+                      _focusWithin={{
+                        borderColor: "blue.500",
+                        boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
+                      }}
+                    >
+                      <Icon as={FiUser} color="gray.400" boxSize={{ base: 4, md: 5 }} />
+                      <Input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Choose your username"
+                        border="none"
+                        _focus={{ outline: "none" }}
+                        fontSize={{ base: "sm", md: "sm" }}
+                      />
+                    </HStack>
+                  </FormControl>
+
+                  {/* Email Field */}
+                  <FormControl isRequired>
+                    <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="600" color="gray.700">
+                      Email
                     </FormLabel>
                     <HStack
                       borderRadius="lg"
@@ -167,10 +251,10 @@ export default function LoginPage() {
                     >
                       <Icon as={FiMail} color="gray.400" boxSize={{ base: 4, md: 5 }} />
                       <Input
-                        type="text"
-                        value={usernameOrEmail}
-                        onChange={(e) => setUsernameOrEmail(e.target.value)}
-                        placeholder="Enter your username or email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your email"
                         border="none"
                         _focus={{ outline: "none" }}
                         fontSize={{ base: "sm", md: "sm" }}
@@ -200,7 +284,7 @@ export default function LoginPage() {
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter your password"
+                        placeholder="Create a password (min 8 characters)"
                         border="none"
                         _focus={{ outline: "none" }}
                         fontSize={{ base: "sm", md: "sm" }}
@@ -208,29 +292,37 @@ export default function LoginPage() {
                     </HStack>
                   </FormControl>
 
-                  {/* Remember Me Checkbox */}
-                  <HStack justify="space-between" w="100%" flexWrap={{ base: "wrap", md: "nowrap" }} gap={{ base: 2, md: 0 }}>
-                    <Checkbox
-                      isChecked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      colorScheme="blue"
-                      size={{ base: "sm", md: "md" }}
+                  {/* Confirm Password Field */}
+                  <FormControl isRequired>
+                    <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="600" color="gray.700">
+                      Confirm Password
+                    </FormLabel>
+                    <HStack
+                      borderRadius="lg"
+                      border="2px solid"
+                      borderColor="gray.200"
+                      px={{ base: 2, md: 3 }}
+                      py={{ base: 2, md: 2 }}
+                      transition="all 0.2s"
+                      _focusWithin={{
+                        borderColor: "blue.500",
+                        boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
+                      }}
                     >
-                      <Text fontSize={{ base: "xs", md: "sm" }} color="gray.700">
-                        Remember me
-                      </Text>
-                    </Checkbox>
-                    <Link
-                      href="/forgot-password"
-                      fontSize={{ base: "xs", md: "sm" }}
-                      color="blue.600"
-                      _hover={{ color: "blue.700", textDecoration: "underline" }}
-                    >
-                      Forgot password?
-                    </Link>
-                  </HStack>
+                      <Icon as={FiLock} color="gray.400" boxSize={{ base: 4, md: 5 }} />
+                      <Input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm your password"
+                        border="none"
+                        _focus={{ outline: "none" }}
+                        fontSize={{ base: "sm", md: "sm" }}
+                      />
+                    </HStack>
+                  </FormControl>
 
-                  {/* Login Button */}
+                  {/* Signup Button */}
                   <Button
                     type="submit"
                     colorScheme="blue"
@@ -248,9 +340,9 @@ export default function LoginPage() {
                     _active={{ transform: "translateY(0)" }}
                     transition="all 0.2s"
                   >
-                    {loading ? "Logging in..." : (
+                    {loading ? "Creating Account..." : (
                       <HStack gap={2}>
-                        <Text>Sign In</Text>
+                        <Text>Create Account</Text>
                         <FiArrowRight />
                       </HStack>
                     )}
@@ -262,20 +354,17 @@ export default function LoginPage() {
               <HStack w="100%" gap={3}>
                 <Divider borderColor="gray.200" />
                 <Text fontSize={{ base: "xs", md: "xs" }} color="gray.500" whiteSpace="nowrap">
-                  New here?
+                  Have an account?
                 </Text>
                 <Divider borderColor="gray.200" />
               </HStack>
 
-              {/* Register Link */}
+              {/* Login Link */}
               <VStack gap={2} w="100%">
                 <Text fontSize={{ base: "xs", md: "sm" }} color="gray.600" textAlign="center">
-                  Don't have an account?
+                  Already registered?
                 </Text>
-                <Link
-                  href="/signup"
-                  w="100%"
-                >
+                <Link href="/login" w="100%">
                   <Button
                     w="100%"
                     variant="outline"
@@ -291,7 +380,7 @@ export default function LoginPage() {
                     }}
                     transition="all 0.2s"
                   >
-                    Create Account
+                    Sign In Instead
                   </Button>
                 </Link>
               </VStack>

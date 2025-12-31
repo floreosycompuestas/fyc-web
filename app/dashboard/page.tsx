@@ -26,7 +26,7 @@ import { FiUsers, FiActivity, FiSettings, FiLogOut, FiMenu, FiX } from 'react-ic
 export default function DashboardPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [user] = useState<any>(null);
   const { open, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const handleLogout = async () => {
     try {
       // Call logout endpoint which clears HttpOnly cookies on backend
-      const response = await fetch('/api/auth/logout', {
+      await fetch('/api/auth/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,10 +77,10 @@ export default function DashboardPage() {
       {/* Responsive Navigation Header */}
       <Box borderBottom="1px" borderColor="gray.200" bg="white" boxShadow="sm">
         <Container maxW="7xl" px={{ base: 4, md: 6 }}>
-          <Flex h="16" align="center" justify="space-between">
+          <Flex h={{ base: 14, md: 16 }} align="center" justify="space-between">
             {/* Logo */}
             <Heading
-              size="lg"
+              size={{ base: "md", md: "lg" }}
               bgGradient="linear(to-r, blue.500, purple.500)"
               bgClip="text"
               cursor="pointer"
@@ -144,6 +144,7 @@ export default function DashboardPage() {
               variant="ghost"
               display={{ base: 'flex', md: 'none' }}
               aria-label="Toggle menu"
+              size="sm"
             >
               {open ? <FiX size={24} /> : <FiMenu size={24} />}
             </IconButton>
@@ -203,35 +204,35 @@ export default function DashboardPage() {
       </Box>
 
       {/* Main Content */}
-      <Container maxW="7xl" px={{ base: 4, md: 6 }} py={12}>
+      <Container maxW="7xl" px={{ base: 4, md: 6 }} py={{ base: 8, md: 12 }}>
         {/* Welcome Section */}
-        <VStack align="start" mb={8} gap={2}>
-          <Heading size="2xl">Welcome to FYC Dashboard</Heading>
-          <Text color="gray.600">
+        <VStack align="start" mb={{ base: 6, md: 8 }} gap={{ base: 1, md: 2 }}>
+          <Heading size={{ base: "lg", md: "2xl" }}>Welcome to FYC Dashboard</Heading>
+          <Text color="gray.600" fontSize={{ base: "sm", md: "base" }}>
             You are successfully logged in. This is your dashboard.
           </Text>
         </VStack>
 
         {/* Dashboard Stats Grid */}
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6} mb={12}>
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 6 }} mb={{ base: 8, md: 12 }}>
           <Card>
             <CardBody>
-              <HStack justify="space-between">
+              <HStack justify="space-between" gap={{ base: 3, md: 4 }}>
                 <Stack gap={2}>
                   <Stat>
-                    <StatLabel>Total Users</StatLabel>
-                    <StatNumber>--</StatNumber>
+                    <StatLabel fontSize={{ base: "xs", md: "sm" }}>Total Users</StatLabel>
+                    <StatNumber fontSize={{ base: "lg", md: "2xl" }}>--</StatNumber>
                   </Stat>
                 </Stack>
                 <Flex
-                  w={12}
-                  h={12}
+                  w={{ base: 10, md: 12 }}
+                  h={{ base: 10, md: 12 }}
                   align="center"
                   justify="center"
                   borderRadius="full"
                   bg="blue.100"
                 >
-                  <Icon as={FiUsers} boxSize={6} color="blue.600" />
+                  <Icon as={FiUsers} boxSize={{ base: 5, md: 6 }} color="blue.600" />
                 </Flex>
               </HStack>
             </CardBody>
@@ -239,22 +240,22 @@ export default function DashboardPage() {
 
           <Card>
             <CardBody>
-              <HStack justify="space-between">
+              <HStack justify="space-between" gap={{ base: 3, md: 4 }}>
                 <Stack gap={2}>
                   <Stat>
-                    <StatLabel>Recent Activity</StatLabel>
-                    <StatNumber>--</StatNumber>
+                    <StatLabel fontSize={{ base: "xs", md: "sm" }}>Recent Activity</StatLabel>
+                    <StatNumber fontSize={{ base: "lg", md: "2xl" }}>--</StatNumber>
                   </Stat>
                 </Stack>
                 <Flex
-                  w={12}
-                  h={12}
+                  w={{ base: 10, md: 12 }}
+                  h={{ base: 10, md: 12 }}
                   align="center"
                   justify="center"
                   borderRadius="full"
                   bg="green.100"
                 >
-                  <Icon as={FiActivity} boxSize={6} color="green.600" />
+                  <Icon as={FiActivity} boxSize={{ base: 5, md: 6 }} color="green.600" />
                 </Flex>
               </HStack>
             </CardBody>
@@ -262,22 +263,22 @@ export default function DashboardPage() {
 
           <Card>
             <CardBody>
-              <HStack justify="space-between">
+              <HStack justify="space-between" gap={{ base: 3, md: 4 }}>
                 <Stack gap={2}>
                   <Stat>
-                    <StatLabel>Account Status</StatLabel>
-                    <StatNumber>{user?.email ? 'Active' : '--'}</StatNumber>
+                    <StatLabel fontSize={{ base: "xs", md: "sm" }}>Account Status</StatLabel>
+                    <StatNumber fontSize={{ base: "lg", md: "2xl" }}>{user?.email ? 'Active' : '--'}</StatNumber>
                   </Stat>
                 </Stack>
                 <Flex
-                  w={12}
-                  h={12}
+                  w={{ base: 10, md: 12 }}
+                  h={{ base: 10, md: 12 }}
                   align="center"
                   justify="center"
                   borderRadius="full"
                   bg="purple.100"
                 >
-                  <Icon as={FiSettings} boxSize={6} color="purple.600" />
+                  <Icon as={FiSettings} boxSize={{ base: 5, md: 6 }} color="purple.600" />
                 </Flex>
               </HStack>
             </CardBody>
@@ -285,29 +286,29 @@ export default function DashboardPage() {
         </SimpleGrid>
 
         {/* Quick Links Section */}
-        <Box mb={12}>
-          <Heading size="md" mb={4}>
+        <Box mb={{ base: 8, md: 12 }}>
+          <Heading size={{ base: "sm", md: "md" }} mb={4}>
             Quick Links
           </Heading>
-          <SimpleGrid columns={{ base: 2, sm: 2, lg: 4 }} gap={4}>
+          <SimpleGrid columns={{ base: 2, sm: 2, lg: 4 }} gap={{ base: 3, md: 4 }}>
             <Card _hover={{ bg: 'gray.100' }} cursor="pointer">
-              <CardBody textAlign="center">
-                <Text fontWeight="medium">Profile</Text>
+              <CardBody textAlign="center" py={{ base: 4, md: 6 }}>
+                <Text fontWeight="medium" fontSize={{ base: "sm", md: "base" }}>Profile</Text>
               </CardBody>
             </Card>
             <Card _hover={{ bg: 'gray.100' }} cursor="pointer">
-              <CardBody textAlign="center">
-                <Text fontWeight="medium">Settings</Text>
+              <CardBody textAlign="center" py={{ base: 4, md: 6 }}>
+                <Text fontWeight="medium" fontSize={{ base: "sm", md: "base" }}>Settings</Text>
               </CardBody>
             </Card>
             <Card _hover={{ bg: 'gray.100' }} cursor="pointer">
-              <CardBody textAlign="center">
-                <Text fontWeight="medium">Help</Text>
+              <CardBody textAlign="center" py={{ base: 4, md: 6 }}>
+                <Text fontWeight="medium" fontSize={{ base: "sm", md: "base" }}>Help</Text>
               </CardBody>
             </Card>
             <Card _hover={{ bg: 'gray.100' }} cursor="pointer">
-              <CardBody textAlign="center">
-                <Text fontWeight="medium">Documentation</Text>
+              <CardBody textAlign="center" py={{ base: 4, md: 6 }}>
+                <Text fontWeight="medium" fontSize={{ base: "sm", md: "base" }}>Documentation</Text>
               </CardBody>
             </Card>
           </SimpleGrid>
@@ -315,12 +316,12 @@ export default function DashboardPage() {
 
         {/* Recent Activity Section */}
         <Box>
-          <Heading size="md" mb={4}>
+          <Heading size={{ base: "sm", md: "md" }} mb={4}>
             Recent Activity
           </Heading>
           <Card>
             <CardBody>
-              <Text textAlign="center" color="gray.500">
+              <Text textAlign="center" color="gray.500" fontSize={{ base: "sm", md: "base" }}>
                 No recent activity yet. Your activities will appear here.
               </Text>
             </CardBody>
