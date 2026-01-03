@@ -112,7 +112,7 @@ export default function LoginPage() {
               </Heading>
             </Box>
             <Heading size={{ base: "md", md: "lg" }} color="white">
-              FYC Spanish Timbrado Club
+              The Spanish Timbrado Club
             </Heading>
             <Text color="whiteAlpha.800" fontSize={{ base: "xs", md: "sm" }}>
               Spanish Timbrado breeding & management system

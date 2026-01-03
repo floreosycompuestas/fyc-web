@@ -27,7 +27,7 @@ export async function proxy(request: NextRequest) {
     try {
       // Call refresh endpoint to get new access token
       // Build full URL to backend server
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL;
       const refreshUrl = `${backendUrl}/auth/refresh`;
 
       // Get the refresh_token from the request cookies

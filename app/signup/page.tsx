@@ -92,7 +92,7 @@ export default function SignupPage() {
     try {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-      const response = await fetch(`${apiBaseUrl}/auth/register`, {
+      const response = await fetch(`${apiBaseUrl}/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -389,7 +389,7 @@ export default function SignupPage() {
 
           {/* Footer */}
           <Text fontSize={{ base: "xs", md: "xs" }} color="whiteAlpha.700" textAlign="center">
-            © 2025 Spanish Timbrado Young Club. All rights reserved.
+            © 2026 Spanish Timbrado FYC Club. All rights reserved.
           </Text>
         </VStack>
       </Container>
