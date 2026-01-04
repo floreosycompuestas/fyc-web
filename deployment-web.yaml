@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fyc-web-prod
+  namespace: fyc
+  labels:
+    app: fyc-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fyc-web
+  template:
+    metadata:
+      labels:
+        app: fyc-web
+    spec:
+      containers:
+      - name: fyc-web
+        image: rgrullon/fyc-web-prod
+        imagePullPolicy: Always ##IfNotPresent
+        ports:
+         - containerPort: 3000

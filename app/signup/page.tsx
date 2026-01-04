@@ -92,7 +92,7 @@ export default function SignupPage() {
     try {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-      const response = await fetch(`${apiBaseUrl}/users/register`, {
+      const response = await fetch(`/api/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -38,7 +38,7 @@ ehthumbs.db
 Thumbs.db
 
 # Documentation
-README.md
+doc/README.md
 CHANGELOG.md
 LICENSE
 *.md

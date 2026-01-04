@@ -35,7 +35,7 @@ export default function LoginPage() {
     // Try to fetch user profile to verify authentication
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/auth/me", {
+        const response = await fetch("/verify", {
           method: "GET",
           credentials: "include",
         });
