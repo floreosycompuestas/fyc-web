@@ -24,6 +24,7 @@ export default {
         unoptimized: process.env.NODE_ENV === 'development', // Skip optimization in dev for speed
     },
     async rewrites() {
+        console.info('API Base URL:', apiBaseUrl);
         return {
             beforeFiles: [
                 {

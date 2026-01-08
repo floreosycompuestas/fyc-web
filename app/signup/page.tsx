@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -31,26 +31,6 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Check if user is already logged in
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        // If successful (200), user is logged in - redirect to dashboard
-        if (response.ok) {
-          router.push("/dashboard");
-        }
-      } catch (err) {
-        console.error("Auth check error:", err);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

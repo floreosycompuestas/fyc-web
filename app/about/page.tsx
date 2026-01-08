@@ -14,9 +14,8 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { GiEagleHead } from "react-icons/gi";
-import { FiLogOut, FiLogIn } from "react-icons/fi";
+import { FiLogIn } from "react-icons/fi";
 import { FaChartLine, FaUsers, FaCog, FaAward } from "react-icons/fa";
-import { useEffect, useState } from "react";
 import {Divider} from "@chakra-ui/layout";
 
 interface InfoCardProps {
@@ -59,45 +58,7 @@ const InfoCard = ({ icon, title, description }: InfoCardProps) => (
 
 export default function AboutPage() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          setIsLoggedIn(true);
-        } else {
-          setIsLoggedIn(false);
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setIsLoggedIn(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      setIsLoggedIn(false);
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
 
   return (
     <Box bg="gray.50" minH="100vh">
@@ -120,28 +81,14 @@ export default function AboutPage() {
               >
                 ← Back Home
               </Button>
-              {!isLoading && (
-                isLoggedIn ? (
-                  <Button
-                    colorScheme="red"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleLogout}
-                  >
-                    <FiLogOut style={{ marginRight: '8px' }} />
-                    Logout
-                  </Button>
-                ) : (
-                  <Button
-                    colorScheme="blue"
-                    size="sm"
-                    onClick={() => router.push("/login")}
-                  >
-                    <FiLogIn style={{ marginRight: '8px' }} />
-                    Login
-                  </Button>
-                )
-              )}
+              <Button
+                colorScheme="blue"
+                size="sm"
+                onClick={() => router.push("/login")}
+              >
+                <FiLogIn style={{ marginRight: '8px' }} />
+                Login
+              </Button>
             </HStack>
           </Flex>
         </Container>
@@ -341,34 +288,21 @@ export default function AboutPage() {
                 Join hundreds of dedicated Spanish Timbrado breeders already using FYC to manage their programs
               </Text>
               <HStack gap={4} justify="center" flexWrap="wrap">
-                {!isLoggedIn && (
-                  <>
-                    <Button
-                      colorScheme="blue"
-                      size={{ base: "sm", md: "lg" }}
-                      onClick={() => router.push("/signup")}
-                    >
-                      Sign Up Now
-                    </Button>
-                    <Button
-                      variant="outline"
-                      colorScheme="blue"
-                      size={{ base: "sm", md: "lg" }}
-                      onClick={() => router.push("/login")}
-                    >
-                      Sign In
-                    </Button>
-                  </>
-                )}
-                {isLoggedIn && (
-                  <Button
-                    colorScheme="blue"
-                    size={{ base: "sm", md: "lg" }}
-                    onClick={() => router.push("/dashboard")}
-                  >
-                    Go to Dashboard
-                  </Button>
-                )}
+                <Button
+                  colorScheme="blue"
+                  size={{ base: "sm", md: "lg" }}
+                  onClick={() => router.push("/signup")}
+                >
+                  Sign Up Now
+                </Button>
+                <Button
+                  variant="outline"
+                  colorScheme="blue"
+                  size={{ base: "sm", md: "lg" }}
+                  onClick={() => router.push("/login")}
+                >
+                  Sign In
+                </Button>
               </HStack>
             </VStack>
           </Box>

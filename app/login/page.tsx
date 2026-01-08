@@ -31,31 +31,16 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   // Check if user is already logged in
+
+
   useEffect(() => {
-    // Try to fetch user profile to verify authentication
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          method: "GET",
-          credentials: "include",
-        });
+   //proxy will handle redirect if not authenticated
+      router.push("/dashboard");
 
-        // If successful (200), user is logged in - redirect to dashboard
-        if (response.ok) {
-          router.push("/dashboard");
-        }
-        // If 401 or other error, user is not logged in - show login form
-      } catch (err) {
-        // Network error, show login form
-        console.error("Auth check error:", err);
-      }
-    };
-
-    checkAuth();
   }, [router]);
 
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -300,7 +285,7 @@ export default function LoginPage() {
 
           {/* Footer */}
           <Text fontSize={{ base: "xs", md: "xs" }} color="whiteAlpha.700" textAlign="center">
-            © 2025 Spanish Timbrado Young Club. All rights reserved.
+            © 2026 Spanish Timbrado Young Club. All rights reserved.
           </Text>
         </VStack>
       </Container>

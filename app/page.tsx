@@ -14,9 +14,8 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { GiEagleHead } from "react-icons/gi";
-import { FiLogOut, FiLogIn } from "react-icons/fi";
+import { FiLogIn } from "react-icons/fi";
 import { FaChartLine, FaUsers, FaCog } from "react-icons/fa";
 
 interface FeatureProps {
@@ -46,51 +45,6 @@ const Feature = ({ icon, title, description }: FeatureProps) => (
 
 export default function Home() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Check if user is logged in
-    const checkAuth = async () => {
-      try {
-        // Call our Next.js API route that can read HttpOnly cookies
-        const response = await fetch("/api/auth/me", {
-          method: "GET",
-          credentials: "include", // Send cookies with request
-        });
-
-        console.log("Auth verify response status:", response.status);
-
-        if (response.ok) {
-          console.log("User is logged in");
-          setIsLoggedIn(true);
-        } else {
-          console.log("User is not logged in");
-          setIsLoggedIn(false);
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setIsLoggedIn(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      setIsLoggedIn(false);
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
 
   return (
     <Box bg="gray.50" minH="100vh">
@@ -105,28 +59,14 @@ export default function Home() {
                 FYC
               </Heading>
             </HStack>
-            {!isLoading && (
-              isLoggedIn ? (
-                <Button
-                  colorScheme="red"
-                  size="sm"
-                  variant="outline"
-                  onClick={handleLogout}
-                >
-                  <FiLogOut style={{ marginRight: '8px' }} />
-                  Logout
-                </Button>
-              ) : (
-                <Button
-                  colorScheme="blue"
-                  size="sm"
-                  onClick={() => router.push("/login")}
-                >
-                  <FiLogIn style={{ marginRight: '8px' }} />
-                  Login
-                </Button>
-              )
-            )}
+            <Button
+              colorScheme="blue"
+              size="sm"
+              onClick={() => router.push("/login")}
+            >
+              <FiLogIn style={{ marginRight: '8px' }} />
+              Login
+            </Button>
           </Flex>
         </Container>
       </Box>
@@ -207,34 +147,21 @@ export default function Home() {
       <Box bg="blue.600" color="white" py={{ base: 12, md: 16 }}>
         <Container maxW="7xl" px={{ base: 4, md: 6 }}>
           <Stack gap={{ base: 4, md: 6 }} textAlign="center">
-              {isLoggedIn ? (
-              <Heading size={{ base: "md", md: "lg" }}>You are part of the revolution!</Heading>
-                ) : (
-                <Heading size={{ base: "md", md: "lg" }}>Join the FYC Spanish Timbrado Club Today!</Heading>
-                )}
-
-            {isLoggedIn ? (
-              <Text fontSize={{ base: "sm", md: "lg" }}>
-                You've joined hundreds of breeders using FYC to manage their Spanish Timbrado programs
-              </Text>
-            ) : (
-              <Text fontSize={{ base: "sm", md: "lg" }}>
-                Create your account today and take your breeding to the next level!
-              </Text>
-            )}
-            {!isLoggedIn && (
-              <Button
-                size={{ base: "sm", md: "lg" }}
-                bg="white"
-                color="blue.600"
-                _hover={{ bg: "gray.100" }}
-                w={{ base: "full", sm: "fit-content" }}
-                mx={{ base: 0, sm: "auto" }}
-                onClick={() => router.push("/signup")}
-              >
-                Sign up Now
-              </Button>
-            )}
+            <Heading size={{ base: "md", md: "lg" }}>Join the FYC Spanish Timbrado Club Today!</Heading>
+            <Text fontSize={{ base: "sm", md: "lg" }}>
+              Create your account today and take your breeding to the next level!
+            </Text>
+            <Button
+              size={{ base: "sm", md: "lg" }}
+              bg="white"
+              color="blue.600"
+              _hover={{ bg: "gray.100" }}
+              w={{ base: "full", sm: "fit-content" }}
+              mx={{ base: 0, sm: "auto" }}
+              onClick={() => router.push("/signup")}
+            >
+              Sign up Now
+            </Button>
           </Stack>
         </Container>
       </Box>
