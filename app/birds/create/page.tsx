@@ -21,8 +21,9 @@ import Footer from '@/app/components/layout/Footer';
 
 export default function CreateBirdPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentBreederId, setCurrentBreederId] = useState<number | null>(null);
+  const [successMessage, setSuccessMessage] = useState<{ band_id: string; name: string; sex: string } | null>(null);
 
   const [formData, setFormData] = useState({
     band_id: '',
@@ -44,8 +45,22 @@ export default function CreateBirdPage() {
   });
 
   useEffect(() => {
-    // Proxy already handles authentication
-    setIsLoading(false);
+    // Fetch current breeder ID from backend
+    const fetchCurrentBreeder = async () => {
+      try {
+        const response = await fetch('/api/breeders/me/breeder', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const breeder = await response.json();
+          setCurrentBreederId(breeder.id);
+        }
+      } catch (err) {
+        console.error('Error fetching current breeder:', err);
+      }
+    };
+
+    fetchCurrentBreeder();
   }, []);
 
   const handleLogout = async () => {
@@ -136,25 +151,25 @@ export default function CreateBirdPage() {
     try {
       // Validate required fields (band_id is required)
       if (!formData.band_id) {
-        alert('Please fill in the Band ID (required field)');
+        alert('⚠ Band ID Required\n\nPlease fill in the Band ID to create a bird');
         setIsSubmitting(false);
         return;
       }
 
       // Check if parent band_ids were entered but not resolved
       if (formData.father_band_id && !resolvedIds.father_id) {
-        alert('Father bird not found. Please check the band ID and try again.');
+        alert(`⚠ Father Bird Not Found\n\nCould not find a bird with band ID "${formData.father_band_id}". Please check and try again.`);
         setIsSubmitting(false);
         return;
       }
 
       if (formData.mother_band_id && !resolvedIds.mother_id) {
-        alert('Mother bird not found. Please check the band ID and try again.');
+        alert(`⚠ Mother Bird Not Found\n\nCould not find a bird with band ID "${formData.mother_band_id}". Please check and try again.`);
         setIsSubmitting(false);
         return;
       }
 
-      // Build payload with resolved IDs
+      // Build payload with resolved IDs and current breeder
       const payload = {
         band_id: formData.band_id,
         name: formData.name,
@@ -162,24 +177,49 @@ export default function CreateBirdPage() {
         sex: formData.sex,
         father_id: resolvedIds.father_id ? parseInt(resolvedIds.father_id) : null,
         mother_id: resolvedIds.mother_id ? parseInt(resolvedIds.mother_id) : null,
+        breeder_id: currentBreederId,
+        owner_id: null,
       };
 
-      // TODO: Replace with actual API call to backend
-      // const response = await fetch('/api/birds', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(payload),
-      //   credentials: 'include',
-      // });
-      // if (!response.ok) throw new Error('Failed to create bird');
+      // Call actual backend API
+      const response = await fetch('/api/birds/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
 
-      console.log('Creating bird:', payload);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Failed to create bird');
+      }
 
-      alert('Bird created successfully');
+      const createdBird = await response.json();
+      console.log('Bird created successfully:', createdBird);
 
-      // Reset form and redirect
+      // Enhanced success notification
+      const birdDetails = `
+✓ Bird Created Successfully!
+
+Band ID: ${formData.band_id}
+${formData.name ? `Name: ${formData.name}` : ''}
+${formData.sex ? `Sex: ${formData.sex === 'M' ? 'Male' : 'Female'}` : ''}
+
+Ready to create another bird or go back to the list.
+      `.trim();
+
+      //alert(birdDetails);
+
+      // Set success message for visual feedback
+      setSuccessMessage({
+        band_id: formData.band_id,
+        name: formData.name,
+        sex: formData.sex,
+      });
+
+      // Reset form and stay on page
       setFormData({
         band_id: '',
         name: '',
@@ -193,10 +233,16 @@ export default function CreateBirdPage() {
         mother_id: '',
       });
 
-      router.push('/birds');
+      // Clear success message after 10 seconds
+      setTimeout(() => setSuccessMessage(null), 10000);
+
+      // Don't redirect - stay on the page for more birds
     } catch (err) {
       console.error('Error creating bird:', err);
-      alert('Failed to create bird');
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+
+      // Enhanced error notification
+      alert(`✗ Failed to Create Bird\n\n${errorMessage}\n\nPlease check your input and try again`);
     } finally {
       setIsSubmitting(false);
     }
@@ -228,6 +274,41 @@ export default function CreateBirdPage() {
             </Text>
           </VStack>
         </HStack>
+
+        {/* Success Message Display */}
+        {successMessage && (
+          <Box
+            mb={6}
+            p={4}
+            bg="green.50"
+            borderLeft="4px"
+            borderColor="green.500"
+            rounded="md"
+            animation="slideIn 0.3s ease-in-out"
+          >
+            <HStack gap={3} align="start">
+              <Text fontSize="2xl">✓</Text>
+              <VStack align="start" gap={1}>
+                <Text fontWeight="600" color="green.800">
+                  Bird Created Successfully!
+                </Text>
+                <Text fontSize="sm" color="green.700">
+                  <strong>Band ID:</strong> {successMessage.band_id}
+                </Text>
+                {successMessage.name && (
+                  <Text fontSize="sm" color="green.700">
+                    <strong>Name:</strong> {successMessage.name}
+                  </Text>
+                )}
+                {successMessage.sex && (
+                  <Text fontSize="sm" color="green.700">
+                    <strong>Sex:</strong> {successMessage.sex === 'M' ? 'Male' : 'Female'}
+                  </Text>
+                )}
+              </VStack>
+            </HStack>
+          </Box>
+        )}
 
         {/* Form Card */}
         <Card boxShadow="lg" rounded="xl" overflow="hidden" borderWidth="1px" borderColor="gray.200">
@@ -437,36 +518,34 @@ export default function CreateBirdPage() {
                 </VStack>
 
                 {/* Action Buttons */}
-                <VStack gap={4} pt={4}>
-                  <HStack gap={4} justify="flex-end" w="100%">
-                    <Button
-                      variant="outline"
-                      onClick={() => router.push('/birds')}
-                      size="lg"
-                      fontWeight="600"
-                      px={8}
-                      borderWidth="2px"
-                      _hover={{ bg: 'gray.50', borderColor: 'gray.400' }}
-                      transition="all 0.2s"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      colorScheme="blue"
-                      type="submit"
-                      disabled={isSubmitting}
-                      size="lg"
-                      fontWeight="600"
-                      px={8}
-                      boxShadow="md"
-                      _hover={{ boxShadow: 'lg', transform: 'translateY(-2px)' }}
-                      _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
-                      transition="all 0.2s"
-                    >
-                      {isSubmitting ? 'Creating...' : 'Create Bird'}
-                    </Button>
-                  </HStack>
-                </VStack>
+                <HStack gap={4} justify="flex-end" w="100%">
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push('/birds')}
+                    size="lg"
+                    fontWeight="600"
+                    px={8}
+                    borderWidth="2px"
+                    _hover={{ bg: 'gray.50', borderColor: 'gray.400' }}
+                    transition="all 0.2s"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    colorScheme="blue"
+                    type="submit"
+                    disabled={isSubmitting}
+                    size="lg"
+                    fontWeight="600"
+                    px={8}
+                    boxShadow="md"
+                    _hover={{ boxShadow: 'lg', transform: 'translateY(-2px)' }}
+                    _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
+                    transition="all 0.2s"
+                  >
+                    {isSubmitting ? 'Creating...' : 'Create Bird'}
+                  </Button>
+                </HStack>
               </VStack>
             </form>
           </CardBody>
