@@ -78,7 +78,7 @@ export default function LoginPage() {
 
 
   return (
-    <Flex minH="100vh" align="center" justify="center" bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" px={{ base: 4, md: 0 }}>
+    <Flex minH="100vh" align="center" justify="center" bg="linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)" px={{ base: 4, md: 0 }}>
       <Container maxW={{ base: "sm", sm: "md" }} px={{ base: 0, md: 4 }}>
         <VStack gap={{ base: 4, md: 6 }} w="100%">
           {/* Brand Header */}
@@ -87,7 +87,7 @@ export default function LoginPage() {
               w={{ base: 10, md: 12 }}
               h={{ base: 10, md: 12 }}
               borderRadius="full"
-              bgGradient="linear(to-r, blue.500, purple.500)"
+              bgGradient="linear(to-r, teal.500, cyan.500)"
               display="flex"
               alignItems="center"
               justifyContent="center"
@@ -198,7 +198,7 @@ export default function LoginPage() {
                     <Checkbox
                       isChecked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      colorScheme="blue"
+                      colorScheme="teal"
                       size={{ base: "sm", md: "md" }}
                     >
                       <Text fontSize={{ base: "xs", md: "sm" }} color="gray.700">

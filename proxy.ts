@@ -14,13 +14,14 @@ if (!BACKEND_URL) {
 /**
  * Main middleware function - handles authentication and token refresh
  * Flow:
- * 1. No tokens → redirect to login
- * 2. Has access_token → VALIDATE via /auth/me
- *    - Valid → allow request
- *    - Invalid (401) → try refresh if refresh_token exists
+ * 1. No tokens → allow public routes, redirect others to login
+ * 2. Has access_token → check if auth route (redirect to dashboard), otherwise allow
  * 3. Only refresh_token → attempt refresh to get new access_token
  * 4. Refresh success → allow request with new token
  * 5. Refresh fail → redirect to login
+ *
+ * Note: Access token validation is deferred to the client via fetch requests.
+ * If a 401 is received on any API call, client will initiate refresh flow.
  */
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -32,14 +33,16 @@ export async function proxy(request: NextRequest) {
 
     // No tokens at all - user not logged in
     if (!hasAccessToken && !hasRefreshToken) {
-       if(PUBLIC_ROUTES.includes(pathname))
-           return NextResponse.next();
+        if (PUBLIC_ROUTES.includes(pathname)) {
+            console.log(`[PROXY] Public route allowed: ${pathname}`);
+            return NextResponse.next();
+        }
 
         console.log(`[PROXY] No tokens found, redirecting to login`);
         return redirectToLogin(pathname, request);
     }
 
-    // User has access token - validate it via /auth/me
+    // User has access token - allow the request
     if (hasAccessToken) {
         // Redirect logged-in users away from auth pages
         if (isAuthRoute(pathname)) {
@@ -47,31 +50,19 @@ export async function proxy(request: NextRequest) {
             return NextResponse.redirect(new URL('/dashboard', request.url));
         }
 
-        // Validate the access token by calling /auth/me
-        const isTokenValid = await validateAccessToken(request);
+        console.log(`[PROXY] Access token present, allowing request to ${pathname}`);
+        return NextResponse.next();
+    }
 
-        if (isTokenValid) {
-            console.log(`[PROXY] Access token validated, allowing request`);
+    // Only refresh token exists - need to refresh before accessing protected routes
+    if (hasRefreshToken) {
+        // Allow public routes even with only refresh token
+        if (PUBLIC_ROUTES.includes(pathname)) {
+            console.log(`[PROXY] Public route allowed with refresh token: ${pathname}`);
             return NextResponse.next();
         }
 
-        // Access token is invalid (expired or revoked)
-        console.log(`[PROXY] Access token is invalid`);
-
-        // Try to refresh if we have a refresh token
-        if (hasRefreshToken) {
-            console.log(`[PROXY] Attempting to refresh with refresh token`);
-            return await attemptTokenRefresh(request, pathname);
-        }
-
-        // No refresh token, redirect to login
-        console.log(`[PROXY] No refresh token available, redirecting to login`);
-        return redirectToLogin(pathname, request);
-    }
-
-    // Only refresh token exists - need to refresh
-    if (hasRefreshToken) {
-        console.log(`[PROXY] Only refresh token found, attempting refresh`);
+        console.log(`[PROXY] Only refresh token found, attempting refresh for ${pathname}`);
         return await attemptTokenRefresh(request, pathname);
     }
 
@@ -79,57 +70,6 @@ export async function proxy(request: NextRequest) {
     return redirectToLogin(pathname, request);
 }
 
-/**
- * Validate access token by calling /auth/me endpoint
- * Returns true if token is valid, false if invalid/expired
- */
-async function validateAccessToken(request: NextRequest): Promise<boolean> {
-    try {
-        if (!BACKEND_URL) {
-            console.error('[VALIDATE] Backend URL not configured');
-            return false;
-        }
-
-        const accessToken = request.cookies.get(COOKIE_ACCESS_TOKEN)?.value;
-        if (!accessToken) {
-            console.warn('[VALIDATE] Access token missing from cookies');
-            return false;
-        }
-
-        console.log('[VALIDATE] Calling /auth/me to validate access token');
-
-        const response = await fetch(`${BACKEND_URL}/auth/me`, {
-            method: 'GET',
-            headers: {
-                'Cookie': `${COOKIE_ACCESS_TOKEN}=${accessToken}`,
-            },
-        }).catch(err => {
-            console.error('[VALIDATE] Fetch error:', err);
-            return null;
-        });
-
-        if (!response) {
-            console.error('[VALIDATE] Network error while validating token');
-            return false;
-        }
-
-        if (response.ok) {
-            console.log('[VALIDATE] Access token is valid');
-            return true;
-        }
-
-        if (response.status === 401) {
-            console.warn('[VALIDATE] Access token is invalid or expired');
-            return false;
-        }
-
-        console.warn(`[VALIDATE] Unexpected response status ${response.status}`);
-        return false;
-    } catch (error) {
-        console.error('[VALIDATE] Unexpected error during validation:', error);
-        return false;
-    }
-}
 
 /**
  * Refresh the access token using refresh token
@@ -176,12 +116,29 @@ async function attemptTokenRefresh(request: NextRequest, pathname: string): Prom
             : NextResponse.next();
 
         // Apply new cookies from refresh response
-        const setCookieHeaders = refreshResponse.headers.getSetCookie();
-        console.log(`[REFRESH] Setting ${setCookieHeaders.length} cookies from refresh response`);
+        // Use getSetCookie() if available, fallback to get('set-cookie')
+        let setCookieHeaders: string[] = [];
+        try {
+            if (refreshResponse.headers.getSetCookie) {
+                setCookieHeaders = refreshResponse.headers.getSetCookie();
+            } else {
+                const setCookieHeader = refreshResponse.headers.get('set-cookie');
+                if (setCookieHeader) {
+                    setCookieHeaders = [setCookieHeader];
+                }
+            }
+        } catch (err) {
+            console.warn('[REFRESH] Error extracting cookies from response:', err);
+        }
 
-        setCookieHeaders.forEach(cookie => {
-            response.headers.append('set-cookie', cookie);
-        });
+        if (setCookieHeaders.length > 0) {
+            console.log(`[REFRESH] Setting ${setCookieHeaders.length} cookies from refresh response`);
+            setCookieHeaders.forEach(cookie => {
+                response.headers.append('set-cookie', cookie);
+            });
+        } else {
+            console.warn('[REFRESH] No Set-Cookie headers found in refresh response');
+        }
 
         return response;
     } catch (error) {
@@ -218,3 +175,6 @@ function redirectToLogin(pathname: string, request: NextRequest): NextResponse {
 export const config = {
     matcher: ['/((?!api|_next/static|_next/image|favicon.ico|public).*)'],
 };
+
+// Export proxy as middleware
+export { proxy as middleware };

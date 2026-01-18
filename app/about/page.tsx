@@ -7,16 +7,15 @@ import {
   Heading,
   Stack,
   Text,
-  Flex,
   VStack,
   HStack,
   Icon,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import { GiEagleHead } from "react-icons/gi";
-import { FiLogIn } from "react-icons/fi";
 import { FaChartLine, FaUsers, FaCog, FaAward } from "react-icons/fa";
-import {Divider} from "@chakra-ui/layout";
+import { Divider } from "@chakra-ui/layout";
+import Header from "@/app/components/layout/Header";
+import Footer from "@/app/components/layout/Footer";
 
 interface InfoCardProps {
   icon: any;
@@ -37,13 +36,13 @@ const InfoCard = ({ icon, title, description }: InfoCardProps) => (
       <HStack gap={3}>
         <Box
           p={2}
-          bg="blue.100"
+          bg="teal.100"
           borderRadius="md"
           display="flex"
           alignItems="center"
           justifyContent="center"
         >
-          <Icon as={icon} w={6} h={6} color="blue.600" />
+          <Icon as={icon} w={6} h={6} color="white" />
         </Box>
         <Heading size="md" color="gray.800">
           {title}
@@ -59,43 +58,27 @@ const InfoCard = ({ icon, title, description }: InfoCardProps) => (
 export default function AboutPage() {
   const router = useRouter();
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      router.push('/login');
+    }
+  };
 
   return (
-    <Box bg="gray.50" minH="100vh">
-      {/* Navigation Bar */}
-      <Box bg="white" boxShadow="sm" position="sticky" top={0} zIndex={10}>
-        <Container maxW="7xl" py={{ base: 3, md: 4 }} px={{ base: 4, md: 6 }}>
-          <Flex justifyContent="space-between" alignItems="center">
-            <HStack gap={{ base: 1, md: 2 }}>
-              <Icon as={GiEagleHead} w={{ base: 6, md: 8 }} h={{ base: 6, md: 8 }} color="blue.600" />
-              <Heading size={{ base: "md", md: "lg" }} color="blue.600" cursor="pointer" onClick={() => router.push("/")}
-              >
-                FYC
-              </Heading>
-            </HStack>
-            <HStack gap={{ base: 2, md: 4 }}>
-              <Button
-                variant="ghost"
-                size={{ base: "sm", md: "md" }}
-                onClick={() => router.push("/")}
-              >
-                ← Back Home
-              </Button>
-              <Button
-                colorScheme="blue"
-                size="sm"
-                onClick={() => router.push("/login")}
-              >
-                <FiLogIn style={{ marginRight: '8px' }} />
-                Login
-              </Button>
-            </HStack>
-          </Flex>
-        </Container>
-      </Box>
+    <Box bg="gray.50" minH="100vh" display="flex" flexDirection="column">
+      {/* Header Component - No logout for public page */}
+      <Header onLogout={handleLogout} showLogout={false} />
 
       {/* Hero Section */}
-      <Box bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" py={{ base: 12, md: 16 }} color="white">
+      <Box bg="linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)" py={{ base: 12, md: 16 }} color="white">
         <Container maxW="7xl" px={{ base: 4, md: 6 }}>
           <VStack gap={{ base: 6, md: 8 }} textAlign="center">
             <Heading size={{ base: "xl", md: "2xl" }} fontWeight="bold">
@@ -116,7 +99,7 @@ export default function AboutPage() {
             <Heading size="lg" mb={4} color="gray.800">
               Welcome to the Spanish Timbrado Young Club
             </Heading>
-            <Text color="gray.700" fontSize={{ base: "sm", md: "base" }} lineHeight="1.8">
+            <Text color="gray.800" fontSize={{ base: "sm", md: "base" }} lineHeight="1.8">
               Founded in 2003, The FYC Spanish Timbrado Club is a dedicated community of passionate breeders committed to the preservation and advancement of the Spanish Timbrado canary breed. Our platform provides comprehensive tools and resources for managing breeding programs, tracking genetics, and connecting with fellow enthusiasts worldwide.
             </Text>
           </Box>
@@ -126,25 +109,25 @@ export default function AboutPage() {
           {/* Mission & Vision */}
           <Box>
             <VStack gap={6} align="stretch">
-              <div>
+              <Box>
                 <HStack mb={3}>
                   <Box
                     p={2}
-                    bg="blue.100"
+                    bg="teal.100"
                     borderRadius="md"
                   >
-                    <Icon as={FaChartLine} w={6} h={6} color="blue.600" />
+                    <Icon as={FaChartLine} w={6} h={6} color="white" />
                   </Box>
                   <Heading size="md" color="gray.800">
                     Our Mission
                   </Heading>
                 </HStack>
-                <Text color="gray.700" fontSize={{ base: "sm", md: "base" }} lineHeight="1.8">
+                <Text color="gray.800" fontSize={{ base: "sm", md: "base" }} lineHeight="1.8">
                   To empower Spanish Timbrado breeders with advanced management tools, educational resources, and a supportive community that promotes breed excellence, genetic diversity, and sustainable breeding practices.
                 </Text>
-              </div>
+              </Box>
 
-              <div>
+              <Box>
                 <HStack mb={3}>
                   <Box
                     p={2}
@@ -157,10 +140,10 @@ export default function AboutPage() {
                     Our Vision
                   </Heading>
                 </HStack>
-                <Text color="gray.700" fontSize={{ base: "sm", md: "base" }} lineHeight="1.8">
+                <Text color="gray.800" fontSize={{ base: "sm", md: "base" }} lineHeight="1.8">
                   To be the leading global platform for Spanish Timbrado canary breeding management, fostering a thriving community where breeders can achieve excellence through innovation, collaboration, and best practices.
                 </Text>
-              </div>
+              </Box>
             </VStack>
           </Box>
 
@@ -171,7 +154,7 @@ export default function AboutPage() {
             <Heading size="lg" mb={6} color="gray.800">
               What We Offer
             </Heading>
-            <Stack gap={4} direction={{ base: "column", md: "column" }}>
+            <Stack gap={4}>
               <InfoCard
                 icon={FaAward}
                 title="Breeding Management"
@@ -204,10 +187,10 @@ export default function AboutPage() {
             </Heading>
             <VStack gap={4} align="start">
               <Box>
-                <Heading size="sm" mb={2} color="blue.600">
+                <Heading size="sm" mb={2} color="gray.800">
                   Genetic Management
                 </Heading>
-                <VStack gap={2} align="start" color="gray.700" fontSize={{ base: "sm", md: "base" }}>
+                <VStack gap={2} align="start" color="gray.800" fontSize={{ base: "sm", md: "base" }}>
                   <HStack align="start" gap={2}><Text>•</Text><Text>Track genetic lineage and breeding history</Text></HStack>
                   <HStack align="start" gap={2}><Text>•</Text><Text>Monitor genetic diversity in your program</Text></HStack>
                   <HStack align="start" gap={2}><Text>•</Text><Text>Identify potential health risks and advantages</Text></HStack>
@@ -216,10 +199,10 @@ export default function AboutPage() {
               </Box>
 
               <Box>
-                <Heading size="sm" mb={2} color="blue.600">
+                <Heading size="sm" mb={2} color="gray.800">
                   Performance Tracking
                 </Heading>
-                <VStack gap={2} align="start" color="gray.700" fontSize={{ base: "sm", md: "base" }}>
+                <VStack gap={2} align="start" color="gray.800" fontSize={{ base: "sm", md: "base" }}>
                   <HStack align="start" gap={2}><Text>•</Text><Text>Record breeding results and success rates</Text></HStack>
                   <HStack align="start" gap={2}><Text>•</Text><Text>Track chick survival and development</Text></HStack>
                   <HStack align="start" gap={2}><Text>•</Text><Text>Document bird performance metrics</Text></HStack>
@@ -228,10 +211,10 @@ export default function AboutPage() {
               </Box>
 
               <Box>
-                <Heading size="sm" mb={2} color="blue.600">
+                <Heading size="sm" mb={2} color="gray.800">
                   Collaboration Tools
                 </Heading>
-                <VStack gap={2} align="start" color="gray.700" fontSize={{ base: "sm", md: "base" }}>
+                <VStack gap={2} align="start" color="gray.800" fontSize={{ base: "sm", md: "base" }}>
                   <HStack align="start" gap={2}><Text>•</Text><Text>Manage team members and roles</Text></HStack>
                   <HStack align="start" gap={2}><Text>•</Text><Text>Share breeding information securely</Text></HStack>
                   <HStack align="start" gap={2}><Text>•</Text><Text>Collaborate on breeding projects</Text></HStack>
@@ -248,7 +231,7 @@ export default function AboutPage() {
             <Heading size="lg" mb={6} color="gray.800">
               Why Choose the FYC Spanish Timbrado Club?
             </Heading>
-            <VStack gap={4} align="start" color="gray.700" fontSize={{ base: "sm", md: "base" }}>
+            <VStack gap={4} align="start" color="gray.800" fontSize={{ base: "sm", md: "base" }}>
               <HStack align="start" gap={3}>
                 <Box mt={1}>✓</Box>
                 <Text><strong>Breed Expertise:</strong> Built by breeders, for breeders who understand the unique needs of Spanish Timbrado management</Text>
@@ -289,7 +272,7 @@ export default function AboutPage() {
               </Text>
               <HStack gap={4} justify="center" flexWrap="wrap">
                 <Button
-                  colorScheme="blue"
+                  colorScheme="teal"
                   size={{ base: "sm", md: "lg" }}
                   onClick={() => router.push("/signup")}
                 >
@@ -297,7 +280,7 @@ export default function AboutPage() {
                 </Button>
                 <Button
                   variant="outline"
-                  colorScheme="blue"
+                  colorScheme="teal"
                   size={{ base: "sm", md: "lg" }}
                   onClick={() => router.push("/login")}
                 >
@@ -309,32 +292,8 @@ export default function AboutPage() {
         </VStack>
       </Container>
 
-      {/* Footer */}
-      <Box bg="gray.800" color="gray.200" py={{ base: 6, md: 8 }} mt={{ base: 8, md: 12 }}>
-        <Container maxW="7xl" px={{ base: 4, md: 6 }}>
-          <Flex
-            justifyContent={{ base: "center", md: "space-between" }}
-            alignItems="center"
-            flexDirection={{ base: "column", md: "row" }}
-            gap={{ base: 4, md: 0 }}
-          >
-            <Text fontSize={{ base: "xs", md: "sm" }} textAlign={{ base: "center", md: "left" }}>
-              &copy; 2025 Spanish Timbrado Young Club. All rights reserved.
-            </Text>
-            <HStack gap={{ base: 3, md: 6 }} fontSize={{ base: "xs", md: "sm" }} flexWrap="wrap" justifyContent={{ base: "center", md: "flex-end" }}>
-              <Text cursor="pointer" _hover={{ color: "white" }}>
-                Privacy Policy
-              </Text>
-              <Text cursor="pointer" _hover={{ color: "white" }}>
-                Terms of Service
-              </Text>
-              <Text cursor="pointer" _hover={{ color: "white" }}>
-                Contact
-              </Text>
-            </HStack>
-          </Flex>
-        </Container>
-      </Box>
+      {/* Footer Component */}
+      <Footer />
     </Box>
   );
 }

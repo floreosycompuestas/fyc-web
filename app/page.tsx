@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { GiEagleHead } from "react-icons/gi";
 import { FiLogIn } from "react-icons/fi";
 import { FaChartLine, FaUsers, FaCog } from "react-icons/fa";
+import Footer from "./components/layout/Footer";
 
 interface FeatureProps {
   icon: any;
@@ -28,13 +29,13 @@ const Feature = ({ icon, title, description }: FeatureProps) => (
   <VStack gap={3} alignItems="start">
     <Box
       p={3}
-      bg="blue.50"
+      bg="teal.50"
       borderRadius="lg"
       display="flex"
       alignItems="center"
       justifyContent="center"
     >
-      <Icon as={icon} w={6} h={6} color="blue.600" />
+      <Icon as={icon} w={6} h={6} color="teal.600" />
     </Box>
     <Heading size="md">{title}</Heading>
     <Text color="gray.600" fontSize="sm">
@@ -48,20 +49,20 @@ export default function Home() {
 
   return (
     <Box bg="gray.50" minH="100vh">
-      {/* Navigation Bar */}
-      <Box bg="white" boxShadow="sm" position="sticky" top={0} zIndex={10}>
+      {/* Professional Navigation Header */}
+      <Box bg="teal.600" boxShadow="md" position="sticky" top={0} zIndex={10} borderBottom="1px" borderColor="teal.700">
         <Container maxW="7xl" py={{ base: 3, md: 4 }}>
           <Flex justifyContent="space-between" alignItems="center">
             <HStack gap={{ base: 1, md: 2 }}>
-              <Icon as={GiEagleHead} w={{ base: 6, md: 8 }} h={{ base: 6, md: 8 }} color="blue.600" />
-              <Heading size={{ base: "md", md: "lg" }} color="blue.600" cursor="pointer" onClick={() => router.push("/")}
->
+              <Icon as={GiEagleHead} w={{ base: 6, md: 8 }} h={{ base: 6, md: 8 }} color="white" />
+              <Heading size={{ base: "md", md: "lg" }} color="white" cursor="pointer" onClick={() => router.push("/")}>
                 FYC
               </Heading>
             </HStack>
             <Button
-              colorScheme="blue"
+              colorScheme="red"
               size="sm"
+              variant="solid"
               onClick={() => router.push("/login")}
             >
               <FiLogIn style={{ marginRight: '8px' }} />
@@ -72,7 +73,7 @@ export default function Home() {
       </Box>
 
       {/* Hero Section */}
-      <Box bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" py={{ base: 12, md: 20 }} color="white">
+      <Box bg="linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)" py={{ base: 12, md: 20 }} color="white">
         <Container maxW="7xl" px={{ base: 4, md: 6 }}>
           <Stack gap={{ base: 6, md: 8 }} textAlign="center">
             <Heading size={{ base: "xl", md: "2xl" }} fontWeight="bold">
@@ -85,7 +86,7 @@ export default function Home() {
               <Button
                 size={{ base: "sm", md: "lg" }}
                 bg="white"
-                color="purple.600"
+                color="teal.600"
                 _hover={{ bg: "gray.100" }}
                 onClick={() => router.push("/signup")}
                 w={{ base: "full", sm: "auto" }}
@@ -144,7 +145,7 @@ export default function Home() {
       </Container>
 
       {/* CTA Section */}
-      <Box bg="blue.600" color="white" py={{ base: 12, md: 16 }}>
+      <Box bg="teal.600" color="white" py={{ base: 12, md: 16 }}>
         <Container maxW="7xl" px={{ base: 4, md: 6 }}>
           <Stack gap={{ base: 4, md: 6 }} textAlign="center">
             <Heading size={{ base: "md", md: "lg" }}>Join the FYC Spanish Timbrado Club Today!</Heading>
@@ -154,7 +155,7 @@ export default function Home() {
             <Button
               size={{ base: "sm", md: "lg" }}
               bg="white"
-              color="blue.600"
+              color="teal.600"
               _hover={{ bg: "gray.100" }}
               w={{ base: "full", sm: "fit-content" }}
               mx={{ base: 0, sm: "auto" }}
@@ -167,31 +168,7 @@ export default function Home() {
       </Box>
 
       {/* Footer */}
-      <Box bg="gray.800" color="gray.200" py={{ base: 6, md: 8 }}>
-        <Container maxW="7xl" px={{ base: 4, md: 6 }}>
-          <Flex
-            justifyContent={{ base: "center", md: "space-between" }}
-            alignItems="center"
-            flexDirection={{ base: "column", md: "row" }}
-            gap={{ base: 4, md: 0 }}
-          >
-            <Text fontSize={{ base: "xs", md: "sm" }} textAlign={{ base: "center", md: "left" }}>
-              &copy; 2025 Spanish Timbrado Young Club. All rights reserved.
-            </Text>
-            <HStack gap={{ base: 3, md: 6 }} fontSize={{ base: "xs", md: "sm" }} flexWrap="wrap" justifyContent={{ base: "center", md: "flex-end" }}>
-              <Text cursor="pointer" _hover={{ color: "white" }}>
-                Privacy Policy
-              </Text>
-              <Text cursor="pointer" _hover={{ color: "white" }}>
-                Terms of Service
-              </Text>
-              <Text cursor="pointer" _hover={{ color: "white" }}>
-                Contact
-              </Text>
-            </HStack>
-          </Flex>
-        </Container>
-      </Box>
+      <Footer />
     </Box>
   );
 }

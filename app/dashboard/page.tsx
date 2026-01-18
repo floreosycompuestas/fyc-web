@@ -21,7 +21,8 @@ import {
 } from '@chakra-ui/react';
 import { Stat, StatLabel, StatNumber } from '@chakra-ui/stat';
 import { Card, CardBody } from '@chakra-ui/card';
-import { FiUsers, FiActivity, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
+import { FiUsers, FiActivity, FiSettings, FiLogOut, FiMenu, FiX, FiPlus } from 'react-icons/fi';
+import Footer from '@/app/components/layout/Footer';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -75,17 +76,16 @@ export default function DashboardPage() {
   return (
     <Box minH="100vh" bg="gray.50">
       {/* Responsive Navigation Header */}
-      <Box borderBottom="1px" borderColor="gray.200" bg="white" boxShadow="sm">
+      <Box borderBottom="1px" borderColor="teal.700" bg="teal.600" boxShadow="md">
         <Container maxW="7xl" px={{ base: 4, md: 6 }}>
           <Flex h={{ base: 14, md: 16 }} align="center" justify="space-between">
             {/* Logo */}
             <Heading
               size={{ base: "md", md: "lg" }}
-              bgGradient="linear(to-r, blue.500, purple.500)"
-              bgClip="text"
+              color="white"
               cursor="pointer"
               onClick={() => router.push('/dashboard')}
-              _hover={{ opacity: 0.8 }}
+              _hover={{ opacity: 0.9 }}
               transition="opacity 0.3s"
             >
               FYC
@@ -104,10 +104,10 @@ export default function DashboardPage() {
                   px={3}
                   py={2}
                   rounded="md"
-                  _hover={{ bg: 'gray.100' }}
+                  _hover={{ bg: 'teal.700' }}
                   fontSize="sm"
                   fontWeight="500"
-                  color="gray.700"
+                  color="white"
                   transition="background-color 0.2s"
                 >
                   {item.label}
@@ -119,10 +119,10 @@ export default function DashboardPage() {
             <HStack gap={4} display={{ base: 'none', md: 'flex' }}>
               {user && (
                 <VStack gap={0} align="flex-end">
-                  <Text fontSize="sm" fontWeight="500" color="gray.900">
+                  <Text fontSize="sm" fontWeight="500" color="white">
                     {user.username}
                   </Text>
-                  <Text fontSize="xs" color="gray.500">
+                  <Text fontSize="xs" color="teal.100">
                     {user.email || 'user@example.com'}
                   </Text>
                 </VStack>
@@ -145,6 +145,7 @@ export default function DashboardPage() {
               display={{ base: 'flex', md: 'none' }}
               aria-label="Toggle menu"
               size="sm"
+              color="white"
             >
               {open ? <FiX size={24} /> : <FiMenu size={24} />}
             </IconButton>
@@ -157,7 +158,7 @@ export default function DashboardPage() {
               gap={0}
               pb={4}
               borderTop="1px"
-              borderColor="gray.200"
+              borderColor="teal.700"
               align="stretch"
             >
               {navItems.map((item) => (
@@ -166,23 +167,23 @@ export default function DashboardPage() {
                   href={item.href}
                   px={3}
                   py={2}
-                  _hover={{ bg: 'gray.100' }}
+                  _hover={{ bg: 'teal.700' }}
                   fontSize="sm"
                   fontWeight="500"
-                  color="gray.700"
+                  color="white"
                   onClick={onClose}
                   transition="background-color 0.2s"
                 >
                   {item.label}
                 </ChakraLink>
               ))}
-              <Box px={3} py={2} borderTop="1px" borderColor="gray.200">
+              <Box px={3} py={2} borderTop="1px" borderColor="teal.700">
                 {user && (
                   <VStack gap={2} align="flex-start" mb={2}>
-                    <Text fontSize="sm" fontWeight="500" color="gray.900">
+                    <Text fontSize="sm" fontWeight="500" color="white">
                       {user.username}
                     </Text>
-                    <Text fontSize="xs" color="gray.500">
+                    <Text fontSize="xs" color="teal.100">
                       {user.email || 'user@example.com'}
                     </Text>
                   </VStack>
@@ -205,129 +206,331 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <Container maxW="7xl" px={{ base: 4, md: 6 }} py={{ base: 8, md: 12 }}>
-        {/* Welcome Section */}
-        <VStack align="start" mb={{ base: 6, md: 8 }} gap={{ base: 1, md: 2 }}>
-          <Heading size={{ base: "lg", md: "2xl" }}>Welcome to FYC Dashboard</Heading>
-          <Text color="gray.600" fontSize={{ base: "sm", md: "base" }}>
-            You are successfully logged in. This is your dashboard.
+        {/* Welcome Section with Better Typography */}
+        <VStack align="start" mb={{ base: 8, md: 12 }} gap={{ base: 2, md: 3 }}>
+          <Heading size={{ base: "lg", md: "2xl" }} color="gray.900" fontWeight="700">
+            Welcome back to FYC
+          </Heading>
+          <Text color="gray.600" fontSize={{ base: "sm", md: "base" }} maxW="2xl">
+            Your comprehensive bird breeding and management platform. Get started by creating a new bird or reviewing your recent activity.
           </Text>
         </VStack>
 
-        {/* Dashboard Stats Grid */}
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 6 }} mb={{ base: 8, md: 12 }}>
-          <Card>
-            <CardBody>
-              <HStack justify="space-between" gap={{ base: 3, md: 4 }}>
-                <Stack gap={2}>
-                  <Stat>
-                    <StatLabel fontSize={{ base: "xs", md: "sm" }}>Total Users</StatLabel>
-                    <StatNumber fontSize={{ base: "lg", md: "2xl" }}>--</StatNumber>
-                  </Stat>
-                </Stack>
+        {/* Dashboard Stats Grid - Enhanced Cards */}
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 6 }} mb={{ base: 10, md: 14 }}>
+          {/* Total Birds Card */}
+          <Card
+            boxShadow="sm"
+            rounded="lg"
+            borderWidth="1px"
+            borderColor="gray.200"
+            _hover={{ boxShadow: 'md', borderColor: 'teal.200' }}
+            transition="all 0.2s"
+          >
+            <CardBody p={{ base: 5, md: 6 }}>
+              <HStack justify="space-between" gap={4} align="flex-start">
+                <VStack align="flex-start" gap={1}>
+                  <Text fontSize={{ base: "xs", md: "sm" }} fontWeight="600" color="gray.600" textTransform="uppercase" letterSpacing="0.5px">
+                    Total Birds
+                  </Text>
+                  <Heading size={{ base: "lg", md: "2xl" }} color="teal.600" fontWeight="700">
+                    --
+                  </Heading>
+                  <Text fontSize="xs" color="gray.500">
+                    Birds in collection
+                  </Text>
+                </VStack>
                 <Flex
-                  w={{ base: 10, md: 12 }}
-                  h={{ base: 10, md: 12 }}
+                  w={{ base: 12, md: 14 }}
+                  h={{ base: 12, md: 14 }}
                   align="center"
                   justify="center"
-                  borderRadius="full"
-                  bg="blue.100"
+                  borderRadius="lg"
+                  bg="linear-gradient(135deg, teal.50 0%, teal.100 100%)"
+                  flexShrink={0}
                 >
-                  <Icon as={FiUsers} boxSize={{ base: 5, md: 6 }} color="blue.600" />
+                  <Icon as={FiUsers} boxSize={{ base: 6, md: 7 }} color="teal.600" />
                 </Flex>
               </HStack>
             </CardBody>
           </Card>
 
-          <Card>
-            <CardBody>
-              <HStack justify="space-between" gap={{ base: 3, md: 4 }}>
-                <Stack gap={2}>
-                  <Stat>
-                    <StatLabel fontSize={{ base: "xs", md: "sm" }}>Recent Activity</StatLabel>
-                    <StatNumber fontSize={{ base: "lg", md: "2xl" }}>--</StatNumber>
-                  </Stat>
-                </Stack>
+          {/* Recent Activity Card */}
+          <Card
+            boxShadow="sm"
+            rounded="xl"
+            borderWidth="1px"
+            borderColor="gray.200"
+            _hover={{ boxShadow: 'md', borderColor: 'cyan.200' }}
+            transition="all 0.2s"
+          >
+            <CardBody p={{ base: 5, md: 6 }}>
+              <HStack justify="space-between" gap={4} align="flex-start">
+                <VStack align="flex-start" gap={1}>
+                  <Text fontSize={{ base: "xs", md: "sm" }} fontWeight="600" color="gray.600" textTransform="uppercase" letterSpacing="0.5px">
+                    Recent Activity
+                  </Text>
+                  <Heading size={{ base: "lg", md: "2xl" }} color="cyan.600" fontWeight="700">
+                    --
+                  </Heading>
+                  <Text fontSize="xs" color="gray.500">
+                    Last 30 days
+                  </Text>
+                </VStack>
                 <Flex
-                  w={{ base: 10, md: 12 }}
-                  h={{ base: 10, md: 12 }}
+                  w={{ base: 12, md: 14 }}
+                  h={{ base: 12, md: 14 }}
                   align="center"
                   justify="center"
-                  borderRadius="full"
-                  bg="green.100"
+                  borderRadius="lg"
+                  bg="linear-gradient(135deg, cyan.50 0%, cyan.100 100%)"
+                  flexShrink={0}
                 >
-                  <Icon as={FiActivity} boxSize={{ base: 5, md: 6 }} color="green.600" />
+                  <Icon as={FiActivity} boxSize={{ base: 6, md: 7 }} color="cyan.600" />
                 </Flex>
               </HStack>
             </CardBody>
           </Card>
 
-          <Card>
-            <CardBody>
-              <HStack justify="space-between" gap={{ base: 3, md: 4 }}>
-                <Stack gap={2}>
-                  <Stat>
-                    <StatLabel fontSize={{ base: "xs", md: "sm" }}>Account Status</StatLabel>
-                    <StatNumber fontSize={{ base: "lg", md: "2xl" }}>{user?.email ? 'Active' : '--'}</StatNumber>
-                  </Stat>
-                </Stack>
+          {/* Account Status Card */}
+          <Card
+            boxShadow="sm"
+            rounded="xl"
+            borderWidth="1px"
+            borderColor="gray.200"
+            _hover={{ boxShadow: 'md', borderColor: 'blue.200' }}
+            transition="all 0.2s"
+          >
+            <CardBody p={{ base: 5, md: 6 }}>
+              <HStack justify="space-between" gap={4} align="flex-start">
+                <VStack align="flex-start" gap={1}>
+                  <Text fontSize={{ base: "xs", md: "sm" }} fontWeight="600" color="gray.600" textTransform="uppercase" letterSpacing="0.5px">
+                    Account Status
+                  </Text>
+                  <Heading size={{ base: "lg", md: "2xl" }} color="blue.600" fontWeight="700">
+                    {user?.email ? 'Active' : 'Active'}
+                  </Heading>
+                  <Text fontSize="xs" color="gray.500">
+                    All systems operational
+                  </Text>
+                </VStack>
                 <Flex
-                  w={{ base: 10, md: 12 }}
-                  h={{ base: 10, md: 12 }}
+                  w={{ base: 12, md: 14 }}
+                  h={{ base: 12, md: 14 }}
                   align="center"
                   justify="center"
-                  borderRadius="full"
-                  bg="purple.100"
+                  borderRadius="lg"
+                  bg="linear-gradient(135deg, blue.50 0%, blue.100 100%)"
+                  flexShrink={0}
                 >
-                  <Icon as={FiSettings} boxSize={{ base: 5, md: 6 }} color="purple.600" />
+                  <Icon as={FiSettings} boxSize={{ base: 6, md: 7 }} color="blue.600" />
                 </Flex>
               </HStack>
             </CardBody>
           </Card>
         </SimpleGrid>
 
-        {/* Quick Links Section */}
-        <Box mb={{ base: 8, md: 12 }}>
-          <Heading size={{ base: "sm", md: "md" }} mb={4}>
-            Quick Links
-          </Heading>
-          <SimpleGrid columns={{ base: 2, sm: 2, lg: 4 }} gap={{ base: 3, md: 4 }}>
-            <Card _hover={{ bg: 'gray.100' }} cursor="pointer">
-              <CardBody textAlign="center" py={{ base: 4, md: 6 }}>
-                <Text fontWeight="medium" fontSize={{ base: "sm", md: "base" }}>Profile</Text>
-              </CardBody>
-            </Card>
-            <Card _hover={{ bg: 'gray.100' }} cursor="pointer">
-              <CardBody textAlign="center" py={{ base: 4, md: 6 }}>
-                <Text fontWeight="medium" fontSize={{ base: "sm", md: "base" }}>Settings</Text>
-              </CardBody>
-            </Card>
-            <Card _hover={{ bg: 'gray.100' }} cursor="pointer">
-              <CardBody textAlign="center" py={{ base: 4, md: 6 }}>
-                <Text fontWeight="medium" fontSize={{ base: "sm", md: "base" }}>Help</Text>
-              </CardBody>
-            </Card>
-            <Card _hover={{ bg: 'gray.100' }} cursor="pointer">
-              <CardBody textAlign="center" py={{ base: 4, md: 6 }}>
-                <Text fontWeight="medium" fontSize={{ base: "sm", md: "base" }}>Documentation</Text>
-              </CardBody>
-            </Card>
-          </SimpleGrid>
+        {/* Quick Actions Section */}
+        <Box mb={{ base: 10, md: 14 }}>
+          <VStack align="start" gap={4}>
+            <VStack align="start" gap={1}>
+              <Heading size={{ base: "md", md: "lg" }} color="gray.900" fontWeight="700">
+                Quick Actions
+              </Heading>
+              <Text fontSize="sm" color="gray.600">
+                Get started with these common tasks
+              </Text>
+            </VStack>
+            <SimpleGrid columns={{ base: 2, sm: 2, lg: 4 }} gap={{ base: 3, md: 4 }} w="100%">
+              {/* Create Bird Card */}
+              <Card
+                _hover={{
+                  boxShadow: 'lg',
+                  transform: 'translateY(-4px)',
+                  borderColor: 'blue.300',
+                }}
+                cursor="pointer"
+                transition="all 0.3s"
+                rounded="lg"
+                borderWidth="1px"
+                borderColor="gray.200"
+                onClick={() => router.push('/birds/create')}
+                bg="linear-gradient(135deg, teal.50 0%, white 100%)"
+              >
+                <CardBody textAlign="center" py={{ base: 6, md: 8 }} px={{ base: 4, md: 5 }}>
+                  <VStack gap={3}>
+                    <Flex
+                      w={14}
+                      h={14}
+                      align="center"
+                      justify="center"
+                      borderRadius="lg"
+                      bg="teal.100"
+                      boxShadow="sm"
+                    >
+                      <Icon as={FiPlus} boxSize={7} color="teal.600" fontWeight="bold" />
+                    </Flex>
+                    <VStack gap={1}>
+                      <Text fontWeight="600" fontSize={{ base: "sm", md: "base" }} color="gray.900">
+                        Create Bird
+                      </Text>
+                      <Text fontSize="xs" color="gray.600">
+                        Add new bird
+                      </Text>
+                    </VStack>
+                  </VStack>
+                </CardBody>
+              </Card>
+
+              {/* View Birds Card */}
+              <Card
+                _hover={{
+                  boxShadow: 'lg',
+                  transform: 'translateY(-4px)',
+                  borderColor: 'green.300',
+                }}
+                cursor="pointer"
+                transition="all 0.3s"
+                rounded="lg"
+                borderWidth="1px"
+                borderColor="gray.200"
+                onClick={() => router.push('/birds')}
+                bg="linear-gradient(135deg, cyan.50 0%, white 100%)"
+              >
+                <CardBody textAlign="center" py={{ base: 6, md: 8 }} px={{ base: 4, md: 5 }}>
+                  <VStack gap={3}>
+                    <Flex
+                      w={14}
+                      h={14}
+                      align="center"
+                      justify="center"
+                      borderRadius="lg"
+                      bg="cyan.100"
+                      boxShadow="sm"
+                    >
+                      <Icon as={FiUsers} boxSize={7} color="cyan.600" />
+                    </Flex>
+                    <VStack gap={1}>
+                      <Text fontWeight="600" fontSize={{ base: "sm", md: "base" }} color="gray.900">
+                        My Birds
+                      </Text>
+                      <Text fontSize="xs" color="gray.600">
+                        View collection
+                      </Text>
+                    </VStack>
+                  </VStack>
+                </CardBody>
+              </Card>
+
+              {/* Profile Card */}
+              <Card
+                _hover={{
+                  boxShadow: 'lg',
+                  transform: 'translateY(-4px)',
+                  borderColor: 'purple.300',
+                }}
+                cursor="pointer"
+                transition="all 0.3s"
+                rounded="lg"
+                borderWidth="1px"
+                borderColor="gray.200"
+                bg="linear-gradient(135deg, teal.50 0%, white 100%)"
+              >
+                <CardBody textAlign="center" py={{ base: 6, md: 8 }} px={{ base: 4, md: 5 }}>
+                  <VStack gap={3}>
+                    <Flex
+                      w={14}
+                      h={14}
+                      align="center"
+                      justify="center"
+                      borderRadius="lg"
+                      bg="teal.100"
+                      boxShadow="sm"
+                    >
+                      <Icon as={FiSettings} boxSize={7} color="teal.600" />
+                    </Flex>
+                    <VStack gap={1}>
+                      <Text fontWeight="600" fontSize={{ base: "sm", md: "base" }} color="gray.900">
+                        Profile
+                      </Text>
+                      <Text fontSize="xs" color="gray.600">
+                        View settings
+                      </Text>
+                    </VStack>
+                  </VStack>
+                </CardBody>
+              </Card>
+
+              {/* Help Card */}
+              <Card
+                _hover={{
+                  boxShadow: 'lg',
+                  transform: 'translateY(-4px)',
+                  borderColor: 'orange.300',
+                }}
+                cursor="pointer"
+                transition="all 0.3s"
+                rounded="lg"
+                borderWidth="1px"
+                borderColor="gray.200"
+                bg="linear-gradient(135deg, orange.50 0%, white 100%)"
+              >
+                <CardBody textAlign="center" py={{ base: 6, md: 8 }} px={{ base: 4, md: 5 }}>
+                  <VStack gap={3}>
+                    <Flex
+                      w={14}
+                      h={14}
+                      align="center"
+                      justify="center"
+                      borderRadius="lg"
+                      bg="orange.100"
+                      boxShadow="sm"
+                    >
+                      <Text fontSize="xl" fontWeight="bold" color="orange.600">?</Text>
+                    </Flex>
+                    <VStack gap={1}>
+                      <Text fontWeight="600" fontSize={{ base: "sm", md: "base" }} color="gray.900">
+                        Help & Docs
+                      </Text>
+                      <Text fontSize="xs" color="gray.600">
+                        Get support
+                      </Text>
+                    </VStack>
+                  </VStack>
+                </CardBody>
+              </Card>
+            </SimpleGrid>
+          </VStack>
         </Box>
 
         {/* Recent Activity Section */}
         <Box>
-          <Heading size={{ base: "sm", md: "md" }} mb={4}>
-            Recent Activity
-          </Heading>
-          <Card>
-            <CardBody>
-              <Text textAlign="center" color="gray.500" fontSize={{ base: "sm", md: "base" }}>
-                No recent activity yet. Your activities will appear here.
+          <VStack align="start" gap={4}>
+            <VStack align="start" gap={1}>
+              <Heading size={{ base: "md", md: "lg" }} color="gray.900" fontWeight="700">
+                Recent Activity
+              </Heading>
+              <Text fontSize="sm" color="gray.600">
+                Your latest actions and updates
               </Text>
-            </CardBody>
-          </Card>
+            </VStack>
+            <Card w="100%" boxShadow="sm" rounded="lg" borderWidth="1px" borderColor="gray.200">
+              <CardBody>
+                <VStack gap={4} align="stretch">
+                  <Box textAlign="center" py={8}>
+                    <Text color="gray.500" fontSize={{ base: "sm", md: "base" }}>
+                      No recent activity yet. Start by creating your first bird!
+                    </Text>
+                  </Box>
+                </VStack>
+              </CardBody>
+            </Card>
+          </VStack>
         </Box>
       </Container>
+
+      {/* Professional Footer */}
+      <Footer />
     </Box>
   );
 }

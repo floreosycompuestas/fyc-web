@@ -110,7 +110,7 @@ export default function SignupPage() {
       minH="100vh"
       align="center"
       justify="center"
-      bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+      bg="linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)"
       px={{ base: 4, md: 0 }}
     >
       <Container maxW={{ base: "sm", sm: "md" }} px={{ base: 0, md: 4 }}>
@@ -121,7 +121,7 @@ export default function SignupPage() {
               w={{ base: 10, md: 12 }}
               h={{ base: 10, md: 12 }}
               borderRadius="full"
-              bgGradient="linear(to-r, blue.500, purple.500)"
+              bgGradient="linear(to-r, teal.500, cyan.500)"
               display="flex"
               alignItems="center"
               justifyContent="center"
@@ -195,7 +195,7 @@ export default function SignupPage() {
                       py={{ base: 2, md: 2 }}
                       transition="all 0.2s"
                       _focusWithin={{
-                        borderColor: "blue.500",
+                        borderColor: "teal.600",
                         boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
                       }}
                     >
@@ -225,7 +225,7 @@ export default function SignupPage() {
                       py={{ base: 2, md: 2 }}
                       transition="all 0.2s"
                       _focusWithin={{
-                        borderColor: "blue.500",
+                        borderColor: "teal.600",
                         boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
                       }}
                     >
@@ -255,7 +255,7 @@ export default function SignupPage() {
                       py={{ base: 2, md: 2 }}
                       transition="all 0.2s"
                       _focusWithin={{
-                        borderColor: "blue.500",
+                        borderColor: "teal.600",
                         boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
                       }}
                     >
@@ -285,7 +285,7 @@ export default function SignupPage() {
                       py={{ base: 2, md: 2 }}
                       transition="all 0.2s"
                       _focusWithin={{
-                        borderColor: "blue.500",
+                        borderColor: "teal.600",
                         boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
                       }}
                     >
@@ -305,7 +305,7 @@ export default function SignupPage() {
                   {/* Signup Button */}
                   <Button
                     type="submit"
-                    colorScheme="blue"
+                    colorScheme="teal"
                     disabled={loading}
                     w="100%"
                     h={{ base: 10, md: 12 }}
@@ -348,14 +348,13 @@ export default function SignupPage() {
                   <Button
                     w="100%"
                     variant="outline"
-                    colorScheme="blue"
+                    colorScheme="teal"
                     h={{ base: 9, md: 10 }}
                     fontSize={{ base: "sm", md: "sm" }}
                     fontWeight="600"
-                    borderColor="blue.500"
-                    color="blue.600"
+                    color="teal.600"
                     _hover={{
-                      bg: "blue.50",
+                      bg: "teal.50",
                       transform: "translateY(-1px)",
                     }}
                     transition="all 0.2s"
