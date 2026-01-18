@@ -6,9 +6,7 @@ import {
   Box,
   Button,
   Container,
-  Flex,
   Heading,
-  Link as ChakraLink,
   Stack,
   Text,
   VStack,
@@ -16,19 +14,17 @@ import {
   SimpleGrid,
   Icon,
   Spinner,
-  IconButton,
-  useDisclosure,
+  Flex,
 } from '@chakra-ui/react';
 import { Stat, StatLabel, StatNumber } from '@chakra-ui/stat';
 import { Card, CardBody } from '@chakra-ui/card';
-import { FiUsers, FiActivity, FiSettings, FiLogOut, FiMenu, FiX, FiPlus } from 'react-icons/fi';
+import { FiUsers, FiActivity, FiSettings, FiPlus } from 'react-icons/fi';
+import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [user] = useState<any>(null);
-  const { open, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     // Proxy already handles authentication
@@ -55,13 +51,6 @@ export default function DashboardPage() {
     }
   };
 
-  const navItems = [
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Birds', href: '/birds' },
-    { label: 'Breeders', href: '/breeders' },
-    { label: 'Profile', href: '/profile' },
-  ];
-
   if (isLoading) {
     return (
       <Flex minH="100vh" align="center" justify="center" bg="gray.50">
@@ -74,135 +63,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <Box minH="100vh" bg="gray.50">
-      {/* Responsive Navigation Header */}
-      <Box borderBottom="1px" borderColor="teal.700" bg="teal.600" boxShadow="md">
-        <Container maxW="7xl" px={{ base: 4, md: 6 }}>
-          <Flex h={{ base: 14, md: 16 }} align="center" justify="space-between">
-            {/* Logo */}
-            <Heading
-              size={{ base: "md", md: "lg" }}
-              color="white"
-              cursor="pointer"
-              onClick={() => router.push('/dashboard')}
-              _hover={{ opacity: 0.9 }}
-              transition="opacity 0.3s"
-            >
-              FYC
-            </Heading>
-
-            {/* Desktop Navigation - Hidden on mobile */}
-            <HStack
-              display={{ base: 'none', md: 'flex' }}
-              gap={1}
-              as="nav"
-            >
-              {navItems.map((item) => (
-                <ChakraLink
-                  key={item.label}
-                  href={item.href}
-                  px={3}
-                  py={2}
-                  rounded="md"
-                  _hover={{ bg: 'teal.700' }}
-                  fontSize="sm"
-                  fontWeight="500"
-                  color="white"
-                  transition="background-color 0.2s"
-                >
-                  {item.label}
-                </ChakraLink>
-              ))}
-            </HStack>
-
-            {/* Desktop User Section - Hidden on mobile */}
-            <HStack gap={4} display={{ base: 'none', md: 'flex' }}>
-              {user && (
-                <VStack gap={0} align="flex-end">
-                  <Text fontSize="sm" fontWeight="500" color="white">
-                    {user.username}
-                  </Text>
-                  <Text fontSize="xs" color="teal.100">
-                    {user.email || 'user@example.com'}
-                  </Text>
-                </VStack>
-              )}
-              <Button
-                colorScheme="red"
-                size="sm"
-                variant="outline"
-                onClick={handleLogout}
-              >
-                <FiLogOut style={{ marginRight: '8px' }} />
-                Logout
-              </Button>
-            </HStack>
-
-            {/* Mobile Menu Button - Visible only on mobile */}
-            <IconButton
-              onClick={open ? onClose : onOpen}
-              variant="ghost"
-              display={{ base: 'flex', md: 'none' }}
-              aria-label="Toggle menu"
-              size="sm"
-              color="white"
-            >
-              {open ? <FiX size={24} /> : <FiMenu size={24} />}
-            </IconButton>
-          </Flex>
-
-          {/* Mobile Navigation Menu */}
-          {open && (
-            <VStack
-              display={{ base: 'flex', md: 'none' }}
-              gap={0}
-              pb={4}
-              borderTop="1px"
-              borderColor="teal.700"
-              align="stretch"
-            >
-              {navItems.map((item) => (
-                <ChakraLink
-                  key={item.label}
-                  href={item.href}
-                  px={3}
-                  py={2}
-                  _hover={{ bg: 'teal.700' }}
-                  fontSize="sm"
-                  fontWeight="500"
-                  color="white"
-                  onClick={onClose}
-                  transition="background-color 0.2s"
-                >
-                  {item.label}
-                </ChakraLink>
-              ))}
-              <Box px={3} py={2} borderTop="1px" borderColor="teal.700">
-                {user && (
-                  <VStack gap={2} align="flex-start" mb={2}>
-                    <Text fontSize="sm" fontWeight="500" color="white">
-                      {user.username}
-                    </Text>
-                    <Text fontSize="xs" color="teal.100">
-                      {user.email || 'user@example.com'}
-                    </Text>
-                  </VStack>
-                )}
-                <Button
-                  w="100%"
-                  colorScheme="red"
-                  size="sm"
-                  variant="outline"
-                  onClick={handleLogout}
-                >
-                  <FiLogOut style={{ marginRight: '8px' }} />
-                  Logout
-                </Button>
-              </Box>
-            </VStack>
-          )}
-        </Container>
-      </Box>
+    <Box minH="100vh" bg="gray.50" display="flex" flexDirection="column">
+      {/* Header Component */}
+      <Header onLogout={handleLogout} />
 
       {/* Main Content */}
       <Container maxW="7xl" px={{ base: 4, md: 6 }} py={{ base: 8, md: 12 }}>
@@ -308,7 +171,7 @@ export default function DashboardPage() {
                     Account Status
                   </Text>
                   <Heading size={{ base: "lg", md: "2xl" }} color="blue.600" fontWeight="700">
-                    {user?.email ? 'Active' : 'Active'}
+                    Active
                   </Heading>
                   <Text fontSize="xs" color="gray.500">
                     All systems operational
