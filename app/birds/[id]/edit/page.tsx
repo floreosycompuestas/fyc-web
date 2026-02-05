@@ -82,9 +82,16 @@ export default function EditBirdPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
+    // Convert band_id to uppercase as user types
+    let processedValue = value;
+    if (name === 'band_id') {
+      processedValue = value.toUpperCase();
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: processedValue,
     }));
   };
 
@@ -101,17 +108,23 @@ export default function EditBirdPage() {
       }
 
       // TODO: Replace with actual API call to backend
+      // Convert band_id to uppercase for consistency
+      const payload = {
+        ...formData,
+        band_id: formData.band_id.toUpperCase(),
+      };
+
       // const response = await fetch(`/api/birds/${birdId}`, {
       //   method: 'PUT',
       //   headers: {
       //     'Content-Type': 'application/json',
       //   },
-      //   body: JSON.stringify(formData),
+      //   body: JSON.stringify(payload),
       //   credentials: 'include',
       // });
       // if (!response.ok) throw new Error('Failed to update bird');
 
-      console.log('Updating bird:', formData);
+      console.log('Updating bird:', payload);
 
       alert('Bird updated successfully');
 

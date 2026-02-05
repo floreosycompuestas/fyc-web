@@ -8,19 +8,16 @@ import {
   Container,
   Flex,
   Heading,
-  Link as ChakraLink,
   Text,
   VStack,
   HStack,
   Spinner,
-  IconButton,
-  useDisclosure,
   Input,
   Badge,
 } from '@chakra-ui/react';
 import { Card, CardBody } from '@chakra-ui/card';
-import { FiLogOut, FiMenu, FiX, FiArrowLeft, FiEdit2, FiSave, FiMail, FiUser, FiSettings } from 'react-icons/fi';
-import { NAV_ITEMS } from '@/app/lib/constants';
+import { FiArrowLeft, FiMail, FiUser } from 'react-icons/fi';
+import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
 
 export default function ProfilePage() {
@@ -30,7 +27,6 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const { open, onOpen, onClose } = useDisclosure();
 
   const [editData, setEditData] = useState({
     email: '',
@@ -184,93 +180,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <Box minH="100vh" bg="gray.50">
-      {/* Responsive Navigation Header */}
-      <Box borderBottom="1px" borderColor="gray.200" bg="white" boxShadow="sm">
-        <Container maxW="7xl" px={{ base: 4, md: 6 }}>
-          <Flex h={{ base: 14, md: 16 }} align="center" justify="space-between">
-            {/* Logo */}
-            <Heading
-              size={{ base: 'md', md: 'lg' }}
-              bgGradient="linear(to-r, teal.500, cyan.500)"
-              bgClip="text"
-              cursor="pointer"
-              onClick={() => router.push('/dashboard')}
-              _hover={{ opacity: 0.8 }}
-              transition="opacity 0.3s"
-            >
-              FYC
-            </Heading>
-
-            {/* Desktop Navigation */}
-            <HStack display={{ base: 'none', md: 'flex' }} gap={1} as="nav">
-              {NAV_ITEMS.map((item) => (
-                <ChakraLink
-                  key={item.label}
-                  href={item.href}
-                  px={3}
-                  py={2}
-                  rounded="md"
-                  _hover={{ bg: 'teal.700' }}
-                  fontSize="sm"
-                  fontWeight="500"
-                  color="white"
-                  transition="background-color 0.2s"
-                >
-                  {item.label}
-                </ChakraLink>
-              ))}
-            </HStack>
-
-            {/* Desktop User Section */}
-            <HStack gap={4} display={{ base: 'none', md: 'flex' }}>
-              <Button colorScheme="red" size="sm" variant="solid" onClick={handleLogout}>
-                <FiLogOut style={{ marginRight: '8px' }} />
-                Logout
-              </Button>
-            </HStack>
-
-            {/* Mobile Menu Button */}
-            <IconButton
-              onClick={open ? onClose : onOpen}
-              variant="ghost"
-              display={{ base: 'flex', md: 'none' }}
-              aria-label="Toggle menu"
-              size="sm"
-            >
-              {open ? <FiX size={24} /> : <FiMenu size={24} />}
-            </IconButton>
-          </Flex>
-
-          {/* Mobile Navigation Menu */}
-          {open && (
-            <VStack display={{ base: 'flex', md: 'none' }} gap={0} pb={4} borderTop="1px" borderColor="teal.700" align="stretch">
-              {NAV_ITEMS.map((item) => (
-                <ChakraLink
-                  key={item.label}
-                  href={item.href}
-                  px={3}
-                  py={2}
-                  _hover={{ bg: 'teal.700' }}
-                  fontSize="sm"
-                  fontWeight="500"
-                  color="white"
-                  onClick={onClose}
-                  transition="background-color 0.2s"
-                >
-                  {item.label}
-                </ChakraLink>
-              ))}
-              <Box px={3} py={2} borderTop="1px" borderColor="teal.700">
-                <Button w="100%" colorScheme="red" size="sm" variant="solid" onClick={handleLogout}>
-                  <FiLogOut style={{ marginRight: '8px' }} />
-                  Logout
-                </Button>
-              </Box>
-            </VStack>
-          )}
-        </Container>
-      </Box>
+    <Box minH="100vh" bg="gray.50" display="flex" flexDirection="column">
+      {/* Header Component */}
+      <Header onLogout={handleLogout} />
 
       {/* Main Content */}
       <Container maxW="3xl" px={{ base: 4, md: 6 }} py={{ base: 8, md: 12 }}>

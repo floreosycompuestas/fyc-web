@@ -11,9 +11,12 @@ import {
   Text,
   Heading,
   Flex,
+  IconButton,
+  Link as ChakraLink,
 } from '@chakra-ui/react';
+import Link from 'next/link';
 import { Card, CardBody } from '@chakra-ui/card';
-import { FiPlus, FiArrowLeft, FiEdit2, FiTrash2, FiAlertCircle } from 'react-icons/fi';
+import { FiPlus, FiArrowLeft, FiEdit2, FiTrash2, FiAlertCircle, FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { EnhancedList, ListItemCard } from '@/app/components/ui';
 import { Bird, Breeder } from '@/app/types';
 import { fetchCurrentBreeder, fetchBirdsByBreeder } from '@/app/lib/api';
@@ -28,6 +31,28 @@ export default function BirdsContent() {
   const [error, setError] = useState<string | null>(null);
   const [breeder, setBreeder] = useState<Breeder | null>(null);
   const [birds, setBirds] = useState<Bird[]>([]);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(birds.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentBirds = birds.slice(startIndex, endIndex);
+
+  // Reset to page 1 when items per page changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [itemsPerPage]);
+
+  // Helper function to get parent band IDs
+  const getParentBandId = (parentId: number | undefined): string | undefined => {
+    if (!parentId) return undefined;
+    const parentBird = birds.find((bird) => bird.id === parentId);
+    return parentBird?.band_id;
+  };
 
   useEffect(() => {
     const fetchBirdsForBreeder = async () => {
@@ -142,47 +167,191 @@ export default function BirdsContent() {
             </CardBody>
           </Card>
         ) : (
-          <EnhancedList<Bird>
-            items={birds}
-            variant="card"
-            hoverable={true}
-            spacing={4}
-            emptyMessage="No birds yet. Click 'Create Bird' to add a new bird."
-            renderItem={(bird) => (
-              <ListItemCard
-                title={bird.name || bird.band_id}
-                subtitle={`Band ID: ${bird.band_id}`}
-                metadata={[
-                  {
-                    label: 'Species',
-                    value: 'Spanish Timbrado',
-                  },
-                  bird.sex && {
-                    label: 'Sex',
-                    value: bird.sex === 'M' ? 'Male' : bird.sex === 'F' ? 'Female' : bird.sex,
-                  },
-                  bird.dob && {
-                    label: 'DOB',
-                    value: new Date(bird.dob).toLocaleDateString(),
-                  },
-                ].filter(Boolean) as any}
-                actions={[
-                  {
-                    icon: <FiEdit2 />,
-                    colorScheme: "teal",
-                    variant: 'outline',
-                    onClick: () => router.push(`/birds/${bird.id}/edit`),
-                  },
-                  {
-                    icon: <FiTrash2 />,
-                    colorScheme: 'red',
-                    variant: 'outline',
-                    onClick: () => router.push(`/birds/${bird.id}/delete`),
-                  },
-                ]}
-              />
+          <>
+            {/* Pagination Controls */}
+            {birds.length > 0 && (
+              <Card mb={4} bg="white" shadow="sm">
+                <CardBody>
+                  <Flex
+                    direction={{ base: 'column', md: 'row' }}
+                    justify="space-between"
+                    align={{ base: 'stretch', md: 'center' }}
+                    gap={4}
+                  >
+                    {/* Items per page selector */}
+                    <HStack gap={2}>
+                      <Text fontSize="sm" color="gray.600" whiteSpace="nowrap">
+                        Show:
+                      </Text>
+                      <Box>
+                        <select
+                          style={{
+                            fontSize: '0.875rem',
+                            paddingLeft: '0.75rem',
+                            paddingRight: '0.75rem',
+                            paddingTop: '0.25rem',
+                            paddingBottom: '0.25rem',
+                            borderRadius: '0.375rem',
+                            borderWidth: '1px',
+                            borderColor: '#CBD5E0',
+                            backgroundColor: 'white',
+                            cursor: 'pointer',
+                          }}
+                          value={itemsPerPage}
+                          onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                        >
+                          <option value={5}>5</option>
+                          <option value={10}>10</option>
+                          <option value={25}>25</option>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
+                        </select>
+                      </Box>
+                      <Text fontSize="sm" color="gray.600">
+                        per page
+                      </Text>
+                    </HStack>
+
+                    {/* Page info and navigation */}
+                    <HStack gap={2} justify={{ base: 'center', md: 'flex-end' }}>
+                      <Text fontSize="sm" color="gray.600" whiteSpace="nowrap">
+                        Page {currentPage} of {totalPages} ({birds.length} total)
+                      </Text>
+
+                      {/* Pagination buttons */}
+                      <HStack gap={1}>
+                        <IconButton
+                          aria-label="First page"
+                          size="sm"
+                          variant="outline"
+                          disabled={currentPage === 1}
+                          onClick={() => setCurrentPage(1)}
+                        >
+                          <FiChevronsLeft />
+                        </IconButton>
+                        <IconButton
+                          aria-label="Previous page"
+                          size="sm"
+                          variant="outline"
+                          disabled={currentPage === 1}
+                          onClick={() => setCurrentPage(currentPage - 1)}
+                        >
+                          <FiChevronLeft />
+                        </IconButton>
+                        <IconButton
+                          aria-label="Next page"
+                          size="sm"
+                          variant="outline"
+                          disabled={currentPage === totalPages}
+                          onClick={() => setCurrentPage(currentPage + 1)}
+                        >
+                          <FiChevronRight />
+                        </IconButton>
+                        <IconButton
+                          aria-label="Last page"
+                          size="sm"
+                          variant="outline"
+                          disabled={currentPage === totalPages}
+                          onClick={() => setCurrentPage(totalPages)}
+                        >
+                          <FiChevronsRight />
+                        </IconButton>
+                      </HStack>
+                    </HStack>
+                  </Flex>
+                </CardBody>
+              </Card>
             )}
-          />
+
+            {/* Bird List */}
+            <EnhancedList<Bird>
+              items={currentBirds}
+              variant="card"
+              hoverable={true}
+              spacing={4}
+              emptyMessage="No birds yet. Click 'Add Bird' to add a new bird."
+              renderItem={(bird) => {
+                const fatherBandId = getParentBandId(bird.father_id);
+                const motherBandId = getParentBandId(bird.mother_id);
+
+                return (
+                  <ListItemCard
+                    title={bird.name || bird.band_id}
+                    subtitle={
+                      <Box>
+                        <Text as="span" color="gray.600">Band ID: </Text>
+                        <ChakraLink
+                          as={Link}
+                          href={`/birds/${bird.id}`}
+                          color="teal.600"
+                          fontWeight="medium"
+                          _hover={{ color: 'teal.700', textDecoration: 'underline' }}
+                        >
+                          {bird.band_id}
+                        </ChakraLink>
+                      </Box>
+                    }
+                    metadata={[
+                      {
+                        label: 'Species',
+                        value: 'Spanish Timbrado',
+                      },
+                      bird.sex && {
+                        label: 'Sex',
+                        value: bird.sex === 'M' ? 'Male' : bird.sex === 'F' ? 'Female' : bird.sex,
+                      },
+                      bird.dob && {
+                        label: 'DOB',
+                        value: new Date(bird.dob).toLocaleDateString(),
+                      },
+                      fatherBandId && {
+                        label: 'Father',
+                        value: (
+                          <ChakraLink
+                            as={Link}
+                            href={`/birds/${bird.father_id}`}
+                            color="teal.600"
+                            fontWeight="medium"
+                            _hover={{ color: 'teal.700', textDecoration: 'underline' }}
+                          >
+                            {fatherBandId}
+                          </ChakraLink>
+                        ),
+                      },
+                      motherBandId && {
+                        label: 'Mother',
+                        value: (
+                          <ChakraLink
+                            as={Link}
+                            href={`/birds/${bird.mother_id}`}
+                            color="teal.600"
+                            fontWeight="medium"
+                            _hover={{ color: 'teal.700', textDecoration: 'underline' }}
+                          >
+                            {motherBandId}
+                          </ChakraLink>
+                        ),
+                      },
+                    ].filter(Boolean) as any}
+                    actions={[
+                      {
+                        icon: <FiEdit2 />,
+                        colorScheme: "teal",
+                        variant: 'outline',
+                        onClick: () => router.push(`/birds/${bird.id}/edit`),
+                      },
+                      {
+                        icon: <FiTrash2 />,
+                        colorScheme: 'red',
+                        variant: 'outline',
+                        onClick: () => router.push(`/birds/${bird.id}/delete`),
+                      },
+                    ]}
+                  />
+                );
+              }}
+            />
+          </>
         )}
       </Container>
 

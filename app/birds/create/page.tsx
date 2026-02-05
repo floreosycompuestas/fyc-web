@@ -8,7 +8,6 @@ import {
   Container,
   VStack,
   HStack,
-  Spinner,
   Text,
   Input,
   Heading,
@@ -24,24 +23,25 @@ export default function CreateBirdPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentBreederId, setCurrentBreederId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<{ band_id: string; name: string; sex: string } | null>(null);
+  const [isAutoParsed, setIsAutoParsed] = useState(false);
+
+  // Type-ahead lookup states
+  const [fatherSuggestions, setFatherSuggestions] = useState<any[]>([]);
+  const [motherSuggestions, setMotherSuggestions] = useState<any[]>([]);
+  const [fatherLoading, setFatherLoading] = useState(false);
+  const [motherLoading, setMotherLoading] = useState(false);
+  const [showFatherDropdown, setShowFatherDropdown] = useState(false);
+  const [showMotherDropdown, setShowMotherDropdown] = useState(false);
 
   const [formData, setFormData] = useState({
     band_id: '',
+    bird_year: '',
+    bird_number: '',
     name: '',
     dob: '',
     sex: '',
     father_band_id: '',
     mother_band_id: '',
-  });
-
-  const [lookupLoading, setLookupLoading] = useState({
-    father: false,
-    mother: false,
-  });
-
-  const [resolvedIds, setResolvedIds] = useState({
-    father_id: '',
-    mother_id: '',
   });
 
   useEffect(() => {
@@ -79,68 +79,165 @@ export default function CreateBirdPage() {
     }
   };
 
-  const lookupBirdIdByBandId = async (bandId: string, type: 'father' | 'mother') => {
+  // Parse band_id to extract breeder_code, bird_year, and bird_number
+  // Format: BR001-2024-05 -> breeder_code: BR001, bird_year: 2024, bird_number: 5
+  const parseBandId = (bandId: string) => {
+    // Reset auto-parse indicator if band_id is empty
     if (!bandId.trim()) {
-      // Clear the resolved ID if band_id is empty
-      setResolvedIds((prev) => ({
-        ...prev,
-        [type === 'father' ? 'father_id' : 'mother_id']: '',
-      }));
+      setIsAutoParsed(false);
       return;
     }
 
-    setLookupLoading((prev) => ({ ...prev, [type]: true }));
+    const parts = bandId.toUpperCase().split('-');
+    if (parts.length === 3) {
+      const breederCode = parts[0];
+      const year = parts[1];
+      const number = parts[2];
 
-    try {
-      // TODO: Replace with actual API call to backend
-      // const response = await fetch(`/api/birds/search?band_id=${encodeURIComponent(bandId)}`, {
-      //   credentials: 'include',
-      // });
-      // if (!response.ok) throw new Error('Bird not found');
-      // const bird = await response.json();
-      // setResolvedIds((prev) => ({
-      //   ...prev,
-      //   [type === 'father' ? 'father_id' : 'mother_id']: bird.id,
-      // }));
+      // Validate year is a 4-digit number
+      const yearNum = parseInt(year);
+      if (year.length === 4 && !isNaN(yearNum)) {
+        // Validate number is numeric
+        const numberNum = parseInt(number);
+        if (!isNaN(numberNum)) {
+          // Auto-fill bird_year and bird_number
+          setFormData((prev) => ({
+            ...prev,
+            bird_year: year,
+            bird_number: number,
+            // Optionally set dob to January 1st of the bird_year if not already set
+            dob: prev.dob || `${year}-01-01`,
+          }));
 
-      // Mock implementation for now
-      console.log(`Looking up bird with band_id: ${bandId}`);
+          setIsAutoParsed(true);
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // For demo: just use a mock ID based on band_id
-      const mockId = Math.random().toString().slice(2, 5);
-      setResolvedIds((prev) => ({
-        ...prev,
-        [type === 'father' ? 'father_id' : 'mother_id']: mockId,
-      }));
-
-      console.log(`Resolved ${type} band_id "${bandId}" to ID: ${mockId}`);
-    } catch (err) {
-      console.error(`Error looking up ${type}:`, err);
-      alert(`Could not find bird with band_id: ${bandId}`);
-      setResolvedIds((prev) => ({
-        ...prev,
-        [type === 'father' ? 'father_id' : 'mother_id']: '',
-      }));
-    } finally {
-      setLookupLoading((prev) => ({ ...prev, [type]: false }));
+          console.log(`✓ Parsed band_id: breeder_code=${breederCode}, bird_year=${year}, bird_number=${numberNum}, dob=${year}-01-01`);
+        } else {
+          setIsAutoParsed(false);
+        }
+      } else {
+        setIsAutoParsed(false);
+      }
+    } else {
+      setIsAutoParsed(false);
     }
   };
 
+  // Debounced lookup for father/mother birds
+  const lookupBirds = async (searchTerm: string, sex: 'M' | 'F', type: 'father' | 'mother') => {
+    if (!searchTerm || searchTerm.length < 2) {
+      if (type === 'father') {
+        setFatherSuggestions([]);
+        setShowFatherDropdown(false);
+      } else {
+        setMotherSuggestions([]);
+        setShowMotherDropdown(false);
+      }
+      return;
+    }
+
+    if (type === 'father') {
+      setFatherLoading(true);
+    } else {
+      setMotherLoading(true);
+    }
+
+    try {
+      // Search for birds by breeder_id and sex, filtered by band_id pattern
+      const response = await fetch(`/api/birds/breeder/${currentBreederId}`, {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const birds = await response.json();
+        // Filter birds by sex AND band_id containing the search term
+        const filtered = birds.filter((bird: any) =>
+          bird.sex === sex &&
+          bird.band_id &&
+          bird.band_id.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        if (type === 'father') {
+          setFatherSuggestions(filtered.slice(0, 10)); // Limit to 10 suggestions
+          setShowFatherDropdown(filtered.length > 0);
+        } else {
+          setMotherSuggestions(filtered.slice(0, 10));
+          setShowMotherDropdown(filtered.length > 0);
+        }
+      }
+    } catch (err) {
+      console.error(`Error looking up ${type} birds:`, err);
+    } finally {
+      if (type === 'father') {
+        setFatherLoading(false);
+      } else {
+        setMotherLoading(false);
+      }
+    }
+  };
+
+  // Debounce timer
+  useEffect(() => {
+    if (!currentBreederId) return;
+
+    const timer = setTimeout(() => {
+      if (formData.father_band_id) {
+        lookupBirds(formData.father_band_id, 'M', 'father');
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [formData.father_band_id, currentBreederId]);
+
+  useEffect(() => {
+    if (!currentBreederId) return;
+
+    const timer = setTimeout(() => {
+      if (formData.mother_band_id) {
+        lookupBirds(formData.mother_band_id, 'F', 'mother');
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [formData.mother_band_id, currentBreederId]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
+    // Convert band IDs to uppercase as user types
+    let processedValue = value;
+    if (name === 'band_id' || name === 'father_band_id' || name === 'mother_band_id') {
+      processedValue = value.toUpperCase();
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: processedValue,
     }));
 
-    // Trigger lookup when father or mother band_id changes
-    if (name === 'father_band_id') {
-      lookupBirdIdByBandId(value, 'father');
-    } else if (name === 'mother_band_id') {
-      lookupBirdIdByBandId(value, 'mother');
+    // Auto-parse band_id when it changes
+    if (name === 'band_id') {
+      parseBandId(processedValue);
+    }
+
+    // Show dropdown when typing in father/mother fields
+    if (name === 'father_band_id' && processedValue.length >= 2) {
+      setShowFatherDropdown(true);
+    } else if (name === 'mother_band_id' && processedValue.length >= 2) {
+      setShowMotherDropdown(true);
+    }
+  };
+
+  const selectBird = (bandId: string, type: 'father' | 'mother') => {
+    setFormData((prev) => ({
+      ...prev,
+      [type === 'father' ? 'father_band_id' : 'mother_band_id']: bandId,
+    }));
+
+    if (type === 'father') {
+      setShowFatherDropdown(false);
+    } else {
+      setShowMotherDropdown(false);
     }
   };
 
@@ -156,27 +253,17 @@ export default function CreateBirdPage() {
         return;
       }
 
-      // Check if parent band_ids were entered but not resolved
-      if (formData.father_band_id && !resolvedIds.father_id) {
-        alert(`⚠ Father Bird Not Found\n\nCould not find a bird with band ID "${formData.father_band_id}". Please check and try again.`);
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (formData.mother_band_id && !resolvedIds.mother_id) {
-        alert(`⚠ Mother Bird Not Found\n\nCould not find a bird with band ID "${formData.mother_band_id}". Please check and try again.`);
-        setIsSubmitting(false);
-        return;
-      }
-
       // Build payload with resolved IDs and current breeder
+      // Convert band IDs to uppercase for consistency
       const payload = {
-        band_id: formData.band_id,
-        name: formData.name,
-        dob: formData.dob,
-        sex: formData.sex,
-        father_id: resolvedIds.father_id ? parseInt(resolvedIds.father_id) : null,
-        mother_id: resolvedIds.mother_id ? parseInt(resolvedIds.mother_id) : null,
+        band_id: formData.band_id.toUpperCase(),
+        bird_year: formData.bird_year ? parseInt(formData.bird_year) : null,
+        bird_number: formData.bird_number ? parseInt(formData.bird_number) : null,
+        name: formData.name || null,
+        dob: formData.dob || null,
+        sex: formData.sex || null,
+        father_band_id: formData.father_band_id ? formData.father_band_id.toUpperCase() : null,
+        mother_band_id: formData.mother_band_id ? formData.mother_band_id.toUpperCase() : null,
         breeder_id: currentBreederId,
         owner_id: null,
       };
@@ -199,19 +286,6 @@ export default function CreateBirdPage() {
       const createdBird = await response.json();
       console.log('Bird created successfully:', createdBird);
 
-      // Enhanced success notification
-      const birdDetails = `
-✓ Bird Created Successfully!
-
-Band ID: ${formData.band_id}
-${formData.name ? `Name: ${formData.name}` : ''}
-${formData.sex ? `Sex: ${formData.sex === 'M' ? 'Male' : 'Female'}` : ''}
-
-Ready to create another bird or go back to the list.
-      `.trim();
-
-      //alert(birdDetails);
-
       // Set success message for visual feedback
       setSuccessMessage({
         band_id: formData.band_id,
@@ -222,16 +296,15 @@ Ready to create another bird or go back to the list.
       // Reset form and stay on page
       setFormData({
         band_id: '',
+        bird_year: '',
+        bird_number: '',
         name: '',
         dob: '',
         sex: '',
         father_band_id: '',
         mother_band_id: '',
       });
-      setResolvedIds({
-        father_id: '',
-        mother_id: '',
-      });
+      setIsAutoParsed(false);
 
       // Clear success message after 10 seconds
       setTimeout(() => setSuccessMessage(null), 10000);
@@ -315,14 +388,7 @@ Ready to create another bird or go back to the list.
           <CardBody py={{base: 8, md: 10}} px={{base: 6, md: 8}}>
             <form onSubmit={handleSubmit}>
               <VStack gap={8} align="stretch">
-                {/* Section 1: Essential Information */}
                 <VStack gap={6} align="stretch">
-                  <Box>
-                    <Heading size="sm" color="teal.600" mb={2} fontSize="0.875rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.5px">
-                      Essential Information
-                    </Heading>
-                    <Box height="2px" bg="teal.100" rounded="full" width="40px" />
-                  </Box>
 
                   {/* Band ID - Required */}
                   <FormControl isRequired>
@@ -345,7 +411,57 @@ Ready to create another bird or go back to the list.
                       transition="all 0.2s"
                     />
                     <Text fontSize="xs" color="gray.500" mt={1}>
-                      Unique identifier for the bird
+                      Format: BREEDER-YEAR-NUMBER (e.g., BR001-2024-05)
+                      <br />
+                      Auto-fills bird year, number, and estimated birth date
+                    </Text>
+                  </FormControl>
+
+                  {/* Bird Year */}
+                  <FormControl>
+                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
+                      Bird Year
+                    </FormLabel>
+                    <Input
+                      type="number"
+                      name="bird_year"
+                      value={formData.bird_year}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 2026"
+                      size="lg"
+                      borderWidth="2px"
+                      borderColor="gray.200"
+                      _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)' }}
+                      _hover={{ borderColor: 'blue.300' }}
+                      rounded="lg"
+                      transition="all 0.2s"
+                    />
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      Year the bird was banded
+                    </Text>
+                  </FormControl>
+
+                  {/* Bird Number */}
+                  <FormControl>
+                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
+                      Bird Number
+                    </FormLabel>
+                    <Input
+                      type="number"
+                      name="bird_number"
+                      value={formData.bird_number}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 123"
+                      size="lg"
+                      borderWidth="2px"
+                      borderColor="gray.200"
+                      _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)' }}
+                      _hover={{ borderColor: 'blue.300' }}
+                      rounded="lg"
+                      transition="all 0.2s"
+                    />
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      Sequential number for the bird
                     </Text>
                   </FormControl>
 
@@ -409,18 +525,7 @@ Ready to create another bird or go back to the list.
                   </FormControl>
                 </VStack>
 
-                {/* Divider */}
-                <Box height="1px" bg="gray.100" />
-
-                {/* Section 2: Additional Details */}
                 <VStack gap={6} align="stretch">
-                  <Box>
-                    <Heading size="sm" color="cyan.600" mb={2} fontSize="0.875rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.5px">
-                      Additional Details
-                    </Heading>
-                    <Box height="2px" bg="cyan.100" rounded="full" width="40px" />
-                  </Box>
-
                   {/* Date of Birth */}
                   <FormControl>
                     <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
@@ -444,76 +549,162 @@ Ready to create another bird or go back to the list.
                     </Text>
                   </FormControl>
 
-                  {/* Father Band ID */}
-                  <FormControl>
+                  {/* Father Band ID with Type-Ahead */}
+                  <FormControl position="relative">
                     <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
                       Father Band ID
                     </FormLabel>
-                    <HStack gap={2}>
+                    <Box position="relative">
                       <Input
                         type="text"
                         name="father_band_id"
                         value={formData.father_band_id}
                         onChange={handleInputChange}
-                        placeholder="e.g., BAND-2025-001"
+                        onFocus={() => {
+                          if (formData.father_band_id.length >= 2 && fatherSuggestions.length > 0) {
+                            setShowFatherDropdown(true);
+                          }
+                        }}
+                        onBlur={() => {
+                          // Delay to allow click on dropdown
+                          setTimeout(() => setShowFatherDropdown(false), 200);
+                        }}
+                        placeholder="Start typing band ID... e.g., BAND-2025"
                         size="lg"
                         borderWidth="2px"
-                        borderColor={resolvedIds.father_id ? 'green.500' : 'gray.200'}
+                        borderColor="gray.200"
                         _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)' }}
-                        _hover={{ borderColor: resolvedIds.father_id ? 'green.500' : 'blue.300' }}
+                        _hover={{ borderColor: 'blue.300' }}
                         rounded="lg"
                         transition="all 0.2s"
-                        flex={1}
                       />
-                      {lookupLoading.father && (
-                        <Spinner size="sm" color="blue.500" />
+                      {fatherLoading && (
+                        <Box position="absolute" right="12px" top="50%" transform="translateY(-50%)">
+                          <Text fontSize="sm" color="blue.500">🔍</Text>
+                        </Box>
                       )}
-                    </HStack>
-                    {resolvedIds.father_id ? (
-                      <Text fontSize="xs" color="green.600" mt={1} fontWeight="500">
-                        ✓ Resolved to ID: {resolvedIds.father_id}
-                      </Text>
-                    ) : (
-                      <Text fontSize="xs" color="gray.500" mt={1}>
-                        Band ID of the father bird (if known)
-                      </Text>
-                    )}
+                      {showFatherDropdown && fatherSuggestions.length > 0 && (
+                        <Box
+                          position="absolute"
+                          top="100%"
+                          left={0}
+                          right={0}
+                          mt={1}
+                          bg="white"
+                          border="1px solid"
+                          borderColor="gray.200"
+                          rounded="md"
+                          boxShadow="lg"
+                          maxH="200px"
+                          overflowY="auto"
+                          zIndex={1000}
+                        >
+                          {fatherSuggestions.map((bird) => (
+                            <Box
+                              key={bird.id}
+                              px={4}
+                              py={2}
+                              cursor="pointer"
+                              _hover={{ bg: 'blue.50' }}
+                              onClick={() => selectBird(bird.band_id, 'father')}
+                              borderBottom="1px solid"
+                              borderColor="gray.100"
+                            >
+                              <Text fontWeight="600" fontSize="sm" color="gray.900">
+                                {bird.band_id}
+                              </Text>
+                              {bird.name && (
+                                <Text fontSize="xs" color="gray.600">
+                                  {bird.name}
+                                </Text>
+                              )}
+                            </Box>
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      Type to search for male birds (minimum 2 characters)
+                    </Text>
                   </FormControl>
 
-                  {/* Mother Band ID */}
-                  <FormControl>
+                  {/* Mother Band ID with Type-Ahead */}
+                  <FormControl position="relative">
                     <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
                       Mother Band ID
                     </FormLabel>
-                    <HStack gap={2}>
+                    <Box position="relative">
                       <Input
                         type="text"
                         name="mother_band_id"
                         value={formData.mother_band_id}
                         onChange={handleInputChange}
-                        placeholder="e.g., BAND-2025-002"
+                        onFocus={() => {
+                          if (formData.mother_band_id.length >= 2 && motherSuggestions.length > 0) {
+                            setShowMotherDropdown(true);
+                          }
+                        }}
+                        onBlur={() => {
+                          // Delay to allow click on dropdown
+                          setTimeout(() => setShowMotherDropdown(false), 200);
+                        }}
+                        placeholder="Start typing band ID... e.g., BAND-2025"
                         size="lg"
                         borderWidth="2px"
-                        borderColor={resolvedIds.mother_id ? 'green.500' : 'gray.200'}
+                        borderColor="gray.200"
                         _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)' }}
-                        _hover={{ borderColor: resolvedIds.mother_id ? 'green.500' : 'blue.300' }}
+                        _hover={{ borderColor: 'blue.300' }}
                         rounded="lg"
                         transition="all 0.2s"
-                        flex={1}
                       />
-                      {lookupLoading.mother && (
-                        <Spinner size="sm" color="blue.500" />
+                      {motherLoading && (
+                        <Box position="absolute" right="12px" top="50%" transform="translateY(-50%)">
+                          <Text fontSize="sm" color="blue.500">🔍</Text>
+                        </Box>
                       )}
-                    </HStack>
-                    {resolvedIds.mother_id ? (
-                      <Text fontSize="xs" color="green.600" mt={1} fontWeight="500">
-                        ✓ Resolved to ID: {resolvedIds.mother_id}
-                      </Text>
-                    ) : (
-                      <Text fontSize="xs" color="gray.500" mt={1}>
-                        Band ID of the mother bird (if known)
-                      </Text>
-                    )}
+                      {showMotherDropdown && motherSuggestions.length > 0 && (
+                        <Box
+                          position="absolute"
+                          top="100%"
+                          left={0}
+                          right={0}
+                          mt={1}
+                          bg="white"
+                          border="1px solid"
+                          borderColor="gray.200"
+                          rounded="md"
+                          boxShadow="lg"
+                          maxH="200px"
+                          overflowY="auto"
+                          zIndex={1000}
+                        >
+                          {motherSuggestions.map((bird) => (
+                            <Box
+                              key={bird.id}
+                              px={4}
+                              py={2}
+                              cursor="pointer"
+                              _hover={{ bg: 'blue.50' }}
+                              onClick={() => selectBird(bird.band_id, 'mother')}
+                              borderBottom="1px solid"
+                              borderColor="gray.100"
+                            >
+                              <Text fontWeight="600" fontSize="sm" color="gray.900">
+                                {bird.band_id}
+                              </Text>
+                              {bird.name && (
+                                <Text fontSize="xs" color="gray.600">
+                                  {bird.name}
+                                </Text>
+                              )}
+                            </Box>
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      Type to search for female birds (minimum 2 characters)
+                    </Text>
                   </FormControl>
                 </VStack>
 
