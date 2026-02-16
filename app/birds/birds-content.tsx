@@ -17,6 +17,7 @@ import {
 import Link from 'next/link';
 import { Card, CardBody } from '@chakra-ui/card';
 import { FiPlus, FiArrowLeft, FiEdit2, FiTrash2, FiAlertCircle, FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import { PiTreeStructure } from 'react-icons/pi';
 import { EnhancedList, ListItemCard } from '@/app/components/ui';
 import { Bird, Breeder } from '@/app/types';
 import { fetchCurrentBreeder, fetchBirdsByBreeder } from '@/app/lib/api';
@@ -277,20 +278,7 @@ export default function BirdsContent() {
                 return (
                   <ListItemCard
                     title={bird.name || bird.band_id}
-                    subtitle={
-                      <Box>
-                        <Text as="span" color="gray.600">Band ID: </Text>
-                        <ChakraLink
-                          as={Link}
-                          href={`/birds/${bird.id}`}
-                          color="teal.600"
-                          fontWeight="medium"
-                          _hover={{ color: 'teal.700', textDecoration: 'underline' }}
-                        >
-                          {bird.band_id}
-                        </ChakraLink>
-                      </Box>
-                    }
+                    subtitle={`Band ID: ${bird.band_id}`}
                     metadata={[
                       {
                         label: 'Species',
@@ -306,34 +294,20 @@ export default function BirdsContent() {
                       },
                       fatherBandId && {
                         label: 'Father',
-                        value: (
-                          <ChakraLink
-                            as={Link}
-                            href={`/birds/${bird.father_id}`}
-                            color="teal.600"
-                            fontWeight="medium"
-                            _hover={{ color: 'teal.700', textDecoration: 'underline' }}
-                          >
-                            {fatherBandId}
-                          </ChakraLink>
-                        ),
+                        value: fatherBandId as any,
                       },
                       motherBandId && {
                         label: 'Mother',
-                        value: (
-                          <ChakraLink
-                            as={Link}
-                            href={`/birds/${bird.mother_id}`}
-                            color="teal.600"
-                            fontWeight="medium"
-                            _hover={{ color: 'teal.700', textDecoration: 'underline' }}
-                          >
-                            {motherBandId}
-                          </ChakraLink>
-                        ),
+                        value: motherBandId as any,
                       },
                     ].filter(Boolean) as any}
                     actions={[
+                      {
+                        icon: <PiTreeStructure />,
+                        colorScheme: "blue",
+                        variant: 'outline',
+                        onClick: () => router.push(`/birds/${bird.id}/family-tree`),
+                      },
                       {
                         icon: <FiEdit2 />,
                         colorScheme: "teal",
@@ -347,7 +321,53 @@ export default function BirdsContent() {
                         onClick: () => router.push(`/birds/${bird.id}/delete`),
                       },
                     ]}
-                  />
+                  >
+                    {/* Custom Band ID with clickable link */}
+                    <Box mt={2} mb={2}>
+                      <ChakraLink
+                        as={Link}
+                        href={`/birds/${bird.id}`}
+                        color="teal.600"
+                        fontWeight="medium"
+                        fontSize="sm"
+                        _hover={{ color: 'teal.700', textDecoration: 'underline' }}
+                      >
+                        View Details →
+                      </ChakraLink>
+                    </Box>
+
+                    {/* Parent Links */}
+                    {(fatherBandId || motherBandId) && (
+                      <Box mt={2} fontSize="xs">
+                        {fatherBandId && (
+                          <Box mb={1}>
+                            <Text as="span" color="gray.600">Father: </Text>
+                            <ChakraLink
+                              as={Link}
+                              href={`/birds/${bird.father_id}`}
+                              color="teal.600"
+                              _hover={{ textDecoration: 'underline' }}
+                            >
+                              {fatherBandId}
+                            </ChakraLink>
+                          </Box>
+                        )}
+                        {motherBandId && (
+                          <Box>
+                            <Text as="span" color="gray.600">Mother: </Text>
+                            <ChakraLink
+                              as={Link}
+                              href={`/birds/${bird.mother_id}`}
+                              color="teal.600"
+                              _hover={{ textDecoration: 'underline' }}
+                            >
+                              {motherBandId}
+                            </ChakraLink>
+                          </Box>
+                        )}
+                      </Box>
+                    )}
+                  </ListItemCard>
                 );
               }}
             />

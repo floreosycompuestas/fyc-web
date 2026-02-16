@@ -192,7 +192,15 @@ export default function BirdDetailPage() {
             </VStack>
           </HStack>
 
-          <HStack gap={2}>
+          <HStack gap={2} flexWrap="wrap">
+            <Button
+              colorScheme="blue"
+              variant="outline"
+              size="md"
+              onClick={() => router.push(`/birds/${bird.id}/family-tree`)}
+            >
+              🌳 Family Tree
+            </Button>
             <Button
               colorScheme="teal"
               variant="outline"

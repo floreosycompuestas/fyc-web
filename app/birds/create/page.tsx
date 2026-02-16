@@ -392,7 +392,7 @@ export default function CreateBirdPage() {
 
                   {/* Band ID - Required */}
                   <FormControl isRequired>
-                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
+                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="gray.700" mb={2}>
                       Band ID
                       <Text as="span" color="red.500" ml={1}>*</Text>
                     </FormLabel>
@@ -419,7 +419,7 @@ export default function CreateBirdPage() {
 
                   {/* Bird Year */}
                   <FormControl>
-                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
+                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="gray.700" mb={2}>
                       Bird Year
                     </FormLabel>
                     <Input
@@ -443,7 +443,7 @@ export default function CreateBirdPage() {
 
                   {/* Bird Number */}
                   <FormControl>
-                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
+                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="gray.700" mb={2}>
                       Bird Number
                     </FormLabel>
                     <Input
@@ -467,7 +467,7 @@ export default function CreateBirdPage() {
 
                   {/* Bird Name */}
                   <FormControl>
-                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
+                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="gray.700" mb={2}>
                       Bird Name
                     </FormLabel>
                     <Input
@@ -491,7 +491,7 @@ export default function CreateBirdPage() {
 
                   {/* Sex */}
                   <FormControl>
-                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
+                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="gray.700" mb={2}>
                       Sex
                     </FormLabel>
                     <select
@@ -528,7 +528,7 @@ export default function CreateBirdPage() {
                 <VStack gap={6} align="stretch">
                   {/* Date of Birth */}
                   <FormControl>
-                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
+                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="gray.700" mb={2}>
                       Date of Birth
                     </FormLabel>
                     <Input
@@ -551,7 +551,7 @@ export default function CreateBirdPage() {
 
                   {/* Father Band ID with Type-Ahead */}
                   <FormControl position="relative">
-                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
+                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="gray.700" mb={2}>
                       Father Band ID
                     </FormLabel>
                     <Box position="relative">
@@ -630,7 +630,7 @@ export default function CreateBirdPage() {
 
                   {/* Mother Band ID with Type-Ahead */}
                   <FormControl position="relative">
-                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="white" mb={2}>
+                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="gray.700" mb={2}>
                       Mother Band ID
                     </FormLabel>
                     <Box position="relative">
