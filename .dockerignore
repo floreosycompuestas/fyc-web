@@ -1,23 +1,18 @@
 # Docker build context ignore file
 # Excludes unnecessary files from Docker build context to reduce image size and build time
-
 # Node modules (will be installed in Docker)
 node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-
 # Next.js build artifacts (will be rebuilt)
 .next
 out
-dist
-
 # Git
 .git
 .gitignore
 .gitattributes
-
 # Development
 .env*
 .env.local
@@ -27,7 +22,6 @@ dist
 *.swp
 *.swo
 *~
-
 # OS
 .DS_Store
 .DS_Store?
@@ -36,42 +30,34 @@ dist
 .Trashes
 ehthumbs.db
 Thumbs.db
-
 # Documentation
 doc/README.md
 CHANGELOG.md
 LICENSE
 *.md
 docs/
-
 # Testing
 coverage
 .nyc_output
 *.lcov
-
 # Build artifacts
+# Note: do NOT add lib/ here - it would exclude app/lib/ which contains required modules
 build/
 dist/
-lib/
-
 # Logs
 logs/
 *.log
-
 # Package managers
 pnpm-lock.yaml
 yarn.lock
 package-lock.json.bak
-
 # IDE specific
+# Note: tsconfig.json must NOT be excluded - TypeScript needs it to resolve @/ path aliases during build
 .editorconfig
 .prettierrc
 .eslintrc*
-tsconfig.json
 jest.config.js
 next.config.js.bak
-
 # Misc
 .turbo
 .cache
-

@@ -13,12 +13,22 @@ import {
   HStack,
   Spinner,
   Input,
+  createToaster,
+  Toaster,
 } from '@chakra-ui/react';
 import { FormControl, FormLabel } from '@chakra-ui/form-control';
 import { Card, CardBody } from '@chakra-ui/card';
 import { FiArrowLeft } from 'react-icons/fi';
 import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
+import { fetchBirdById, updateBird } from '@/app/lib/api/birds';
+import { Bird } from '@/app/types';
+
+// Create toaster instance
+const toaster = createToaster({
+  placement: 'top',
+  pauseOnPageIdle: true,
+});
 
 export default function EditBirdPage() {
   const router = useRouter();
@@ -27,41 +37,112 @@ export default function EditBirdPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<{ band_id: string; name: string; sex: string } | null>(null);
+  const [isAutoParsed, setIsAutoParsed] = useState(false);
 
   const [formData, setFormData] = useState({
     band_id: '',
+    bird_year: '',
+    bird_number: '',
     name: '',
     dob: '',
     sex: '',
-    father_id: '',
-    mother_id: '',
+    father_band_id: '',
+    mother_band_id: '',
   });
 
   const [initialData, setInitialData] = useState(formData);
+  const [allBirds, setAllBirds] = useState<Bird[]>([]);
 
   useEffect(() => {
-    // TODO: Fetch bird data from backend
-    // const fetchBird = async () => {
-    //   try {
-    //     const response = await fetch(`/api/birds/${birdId}`, {
-    //       credentials: 'include',
-    //     });
-    //     if (!response.ok) throw new Error('Failed to fetch bird');
-    //     const bird = await response.json();
-    //     setFormData(bird);
-    //     setInitialData(bird);
-    //   } catch (err) {
-    //     console.error('Error fetching bird:', err);
-    //     alert('Failed to load bird data');
-    //     router.push('/birds');
-    //   } finally {
-    //     setIsLoading(false);
-    //   }
-    // };
-    // fetchBird();
+    const fetchBird = async () => {
+      try {
+        const bird = await fetchBirdById(parseInt(birdId));
 
-    // For now, just set loading to false
-    setIsLoading(false);
+        // Fetch all birds to get parent band IDs
+        const birdsResponse = await fetch('/api/birds', {
+          credentials: 'include',
+        });
+
+        let fetchedFatherBandId = '';
+        let fetchedMotherBandId = '';
+
+        if (birdsResponse.ok) {
+          const birds = await birdsResponse.json();
+          setAllBirds(birds);
+
+          // Find parent band IDs
+          const fatherBird = birds.find((b: Bird) => b.id === bird.father_id);
+          const motherBird = birds.find((b: Bird) => b.id === bird.mother_id);
+
+          fetchedFatherBandId = fatherBird?.band_id || '';
+          fetchedMotherBandId = motherBird?.band_id || '';
+        }
+
+        // Parse band_id to derive bird_year and bird_number if they're missing
+        let derivedYear = bird.bird_year ? bird.bird_year.toString() : '';
+        let derivedNumber = bird.bird_number ? bird.bird_number.toString() : '';
+        let derivedDob = bird.dob ? bird.dob.split('T')[0] : '';
+
+        // If bird_year or bird_number are missing, try to derive from band_id
+        if ((!bird.bird_year || !bird.bird_number) && bird.band_id) {
+          const parts = bird.band_id.toUpperCase().split('-');
+          if (parts.length === 3) {
+            const year = parts[1];
+            const number = parts[2];
+
+            // Validate year is 4-digit number
+            const yearNum = parseInt(year);
+            if (year.length === 4 && !isNaN(yearNum)) {
+              const numberNum = parseInt(number);
+              if (!isNaN(numberNum)) {
+                if (!bird.bird_year) {
+                  derivedYear = year;
+                  console.log(`✓ Derived bird_year from band_id: ${year}`);
+                }
+                if (!bird.bird_number) {
+                  derivedNumber = number;
+                  console.log(`✓ Derived bird_number from band_id: ${numberNum}`);
+                }
+                // Set DOB to January 1st of year if missing
+                if (!bird.dob) {
+                  derivedDob = `${year}-01-01`;
+                  console.log(`✓ Set default DOB: ${year}-01-01`);
+                }
+                setIsAutoParsed(true);
+              }
+            }
+          }
+        }
+
+        const data = {
+          band_id: bird.band_id,
+          bird_year: derivedYear,
+          bird_number: derivedNumber,
+          name: bird.name || '',
+          dob: derivedDob,
+          sex: bird.sex || '',
+          father_band_id: fetchedFatherBandId,
+          mother_band_id: fetchedMotherBandId,
+        };
+
+        setFormData(data);
+        setInitialData(data);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load bird data';
+        console.error('Error fetching bird:', err);
+        toaster.create({
+          title: 'Failed to Load Bird',
+          description: errorMessage,
+          type: 'error',
+          duration: 15000,
+        });
+        router.push('/birds');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchBird();
   }, [birdId, router]);
 
   const handleLogout = async () => {
@@ -80,6 +161,55 @@ export default function EditBirdPage() {
     }
   };
 
+  // Parse band_id to extract bird_year and bird_number
+  // Format: BR001-2024-05 -> bird_year: 2024, bird_number: 5
+  const parseBandId = (bandId: string) => {
+    // Reset auto-parse indicator if band_id is empty
+    if (!bandId.trim()) {
+      setIsAutoParsed(false);
+      return;
+    }
+
+    const parts = bandId.toUpperCase().split('-');
+    if (parts.length === 3) {
+      const breederCode = parts[0];
+      const year = parts[1];
+      const number = parts[2];
+
+      // Validate year is a 4-digit number
+      const yearNum = parseInt(year);
+      if (year.length === 4 && !isNaN(yearNum)) {
+        // Validate number is numeric
+        const numberNum = parseInt(number);
+        if (!isNaN(numberNum)) {
+          // Only parse and set values if bird_year or bird_number are missing
+          const shouldParse = !formData.bird_year || !formData.bird_number;
+
+          if (shouldParse) {
+            setFormData((prev) => ({
+              ...prev,
+              // Only update bird_year if it's empty
+              bird_year: prev.bird_year || year,
+              // Only update bird_number if it's empty
+              bird_number: prev.bird_number || number,
+              // Only set dob to January 1st of the bird_year if not already set
+              dob: prev.dob || `${year}-01-01`,
+            }));
+
+            setIsAutoParsed(true);
+            console.log(`✓ Parsed band_id: breeder_code=${breederCode}, bird_year=${year}, bird_number=${numberNum}, dob=${year}-01-01`);
+          }
+        } else {
+          setIsAutoParsed(false);
+        }
+      } else {
+        setIsAutoParsed(false);
+      }
+    } else {
+      setIsAutoParsed(false);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
@@ -87,6 +217,9 @@ export default function EditBirdPage() {
     let processedValue = value;
     if (name === 'band_id') {
       processedValue = value.toUpperCase();
+
+      // Parse band_id to auto-fill bird_year and bird_number
+      parseBandId(processedValue);
     }
 
     setFormData((prev) => ({
@@ -102,39 +235,86 @@ export default function EditBirdPage() {
     try {
       // Validate required fields (band_id is required)
       if (!formData.band_id) {
-        alert('Please fill in the Band ID (required field)');
+        toaster.create({
+          title: 'Band ID Required',
+          description: 'Please fill in the Band ID (required field)',
+          type: 'warning',
+          duration: 4000,
+        });
         setIsSubmitting(false);
         return;
       }
 
-      // TODO: Replace with actual API call to backend
-      // Convert band_id to uppercase for consistency
-      const payload = {
-        ...formData,
-        band_id: formData.band_id.toUpperCase(),
-      };
 
-      // const response = await fetch(`/api/birds/${birdId}`, {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(payload),
-      //   credentials: 'include',
-      // });
-      // if (!response.ok) throw new Error('Failed to update bird');
+      // Prepare payload - only include fields that have changed
+      const payload: any = {};
 
-      console.log('Updating bird:', payload);
+      // Check each field for changes and only include if different from initial data
+      if (formData.band_id.toUpperCase() !== initialData.band_id.toUpperCase()) {
+        payload.band_id = formData.band_id.toUpperCase();
+      }
 
-      alert('Bird updated successfully');
+      if (formData.bird_year !== initialData.bird_year) {
+        payload.bird_year = formData.bird_year ? parseInt(formData.bird_year) : null;
+      }
+
+      if (formData.bird_number !== initialData.bird_number) {
+        payload.bird_number = formData.bird_number ? parseInt(formData.bird_number) : null;
+      }
+
+      if (formData.name !== initialData.name) {
+        payload.name = formData.name || null;
+      }
+
+      if (formData.dob !== initialData.dob) {
+        payload.dob = formData.dob || null;
+      }
+
+      if (formData.sex !== initialData.sex) {
+        payload.sex = formData.sex || null;
+      }
+
+      if (formData.father_band_id.toUpperCase() !== initialData.father_band_id.toUpperCase()) {
+        payload.father_band_id = formData.father_band_id ? formData.father_band_id.toUpperCase() : null;
+      }
+
+      if (formData.mother_band_id.toUpperCase() !== initialData.mother_band_id.toUpperCase()) {
+        payload.mother_band_id = formData.mother_band_id ? formData.mother_band_id.toUpperCase() : null;
+      }
+
+      // If no fields changed, don't make the API call
+      if (Object.keys(payload).length === 0) {
+        console.log('No changes detected, skipping update');
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log('Updating bird with payload:', payload);
+      await updateBird(parseInt(birdId), payload);
+
+      // Set success message for visual feedback
+      setSuccessMessage({
+        band_id: formData.band_id,
+        name: formData.name,
+        sex: formData.sex,
+      });
 
       // Update initial data to mark form as clean
       setInitialData(formData);
 
-      router.push('/birds');
+      // Clear success message after 5 seconds (stay on the form for more edits)
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 15000);
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update bird';
       console.error('Error updating bird:', err);
-      alert('Failed to update bird');
+      toaster.create({
+        title: 'Failed to Update Bird',
+        description: `${errorMessage}. Please check your input and try again.`,
+        type: 'error',
+        duration: 15000,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -161,11 +341,80 @@ export default function EditBirdPage() {
 
   return (
     <Box minH="100vh" bg="gray.50" display="flex" flexDirection="column">
+      {/* Toaster for notifications */}
+      <Toaster toaster={toaster}>
+        {(toast) => (
+          <Box
+            bg={toast.type === 'error' ? 'red.500' : toast.type === 'warning' ? 'orange.500' : 'green.500'}
+            color="white"
+            p={4}
+            rounded="md"
+            boxShadow="lg"
+          >
+            <VStack align="start" gap={1}>
+              <Text fontWeight="bold">{toast.title}</Text>
+              {toast.description && <Text fontSize="sm">{toast.description}</Text>}
+            </VStack>
+          </Box>
+        )}
+      </Toaster>
+
       {/* Header Component */}
       <Header onLogout={handleLogout} />
 
       {/* Main Content */}
       <Container maxW="2xl" px={{ base: 4, md: 6 }} py={{ base: 8, md: 12 }}>
+        {/* Success Message */}
+        {successMessage && (
+          <Box
+            bg="green.50"
+            borderWidth="2px"
+            borderColor="green.400"
+            rounded="lg"
+            p={6}
+            mb={6}
+            boxShadow="md"
+            animation="fadeIn 0.3s ease-in"
+          >
+            <VStack gap={2} align="flex-start">
+              <HStack gap={2}>
+                <Box
+                  bg="green.500"
+                  rounded="full"
+                  w={6}
+                  h={6}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Text color="white" fontWeight="bold" fontSize="sm">✓</Text>
+                </Box>
+                <Heading size="sm" color="green.800">
+                  Bird Updated Successfully!
+                </Heading>
+              </HStack>
+              <Box pl={8}>
+                <Text fontSize="sm" color="green.700" fontWeight="500">
+                  <strong>Band ID:</strong> {successMessage.band_id}
+                </Text>
+                {successMessage.name && (
+                  <Text fontSize="sm" color="green.700" fontWeight="500">
+                    <strong>Name:</strong> {successMessage.name}
+                  </Text>
+                )}
+                {successMessage.sex && (
+                  <Text fontSize="sm" color="green.700" fontWeight="500">
+                    <strong>Sex:</strong> {successMessage.sex === 'M' ? 'Male' : successMessage.sex === 'F' ? 'Female' : successMessage.sex}
+                  </Text>
+                )}
+                <Text fontSize="xs" color="green.600" mt={2}>
+                  You can continue making changes if needed.
+                </Text>
+              </Box>
+            </VStack>
+          </Box>
+        )}
+
         {/* Header with Back Button */}
         <HStack gap={4} align="center" mb={{ base: 8, md: 10 }}>
           <Button
@@ -211,7 +460,7 @@ export default function EditBirdPage() {
                       name="band_id"
                       value={formData.band_id}
                       onChange={handleInputChange}
-                      placeholder="e.g., BAND-2026-001"
+                      placeholder="e.g., BR001-2026-001"
                       size="lg"
                       borderWidth="2px"
                       borderColor="gray.200"
@@ -221,7 +470,55 @@ export default function EditBirdPage() {
                       transition="all 0.2s"
                     />
                     <Text fontSize="xs" color="gray.500" mt={1}>
-                      Unique identifier for the bird
+                      Unique identifier for the bird (format: BREEDER-YYYY-NN)
+                    </Text>
+                  </FormControl>
+
+                  {/* Bird Year */}
+                  <FormControl>
+                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="gray.700" mb={2}>
+                      Bird Year
+                    </FormLabel>
+                    <Input
+                      type="number"
+                      name="bird_year"
+                      value={formData.bird_year}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 2026"
+                      size="lg"
+                      borderWidth="2px"
+                      borderColor="gray.200"
+                      _focus={{ borderColor: 'teal.600', boxShadow: '0 0 0 3px rgba(8, 145, 178, 0.1)' }}
+                      _hover={{ borderColor: 'teal.300' }}
+                      rounded="lg"
+                      transition="all 0.2s"
+                    />
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      Year the bird was born (extracted from band ID)
+                    </Text>
+                  </FormControl>
+
+                  {/* Bird Number */}
+                  <FormControl>
+                    <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="gray.700" mb={2}>
+                      Bird Number
+                    </FormLabel>
+                    <Input
+                      type="number"
+                      name="bird_number"
+                      value={formData.bird_number}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 1"
+                      size="lg"
+                      borderWidth="2px"
+                      borderColor="gray.200"
+                      _focus={{ borderColor: 'teal.600', boxShadow: '0 0 0 3px rgba(8, 145, 178, 0.1)' }}
+                      _hover={{ borderColor: 'teal.300' }}
+                      rounded="lg"
+                      transition="all 0.2s"
+                    />
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      Sequential number for the bird in the given year
                     </Text>
                   </FormControl>
 
@@ -320,17 +617,17 @@ export default function EditBirdPage() {
                     </Text>
                   </FormControl>
 
-                  {/* Father ID */}
+                  {/* Father Band ID */}
                   <FormControl>
                     <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="gray.700" mb={2}>
-                      Father ID
+                      Father Band ID
                     </FormLabel>
                     <Input
-                      type="number"
-                      name="father_id"
-                      value={formData.father_id}
+                      type="text"
+                      name="father_band_id"
+                      value={formData.father_band_id}
                       onChange={handleInputChange}
-                      placeholder="Enter father bird ID"
+                      placeholder="Enter father band ID"
                       size="lg"
                       borderWidth="2px"
                       borderColor="gray.200"
@@ -340,21 +637,21 @@ export default function EditBirdPage() {
                       transition="all 0.2s"
                     />
                     <Text fontSize="xs" color="gray.500" mt={1}>
-                      ID of the father bird (if known)
+                      Band ID of the father bird (if known)
                     </Text>
                   </FormControl>
 
-                  {/* Mother ID */}
+                  {/* Mother Band ID */}
                   <FormControl>
                     <FormLabel fontSize={{ base: "sm", md: "base" }} fontWeight="600" color="gray.700" mb={2}>
-                      Mother ID
+                      Mother Band ID
                     </FormLabel>
                     <Input
-                      type="number"
-                      name="mother_id"
-                      value={formData.mother_id}
+                      type="text"
+                      name="mother_band_id"
+                      value={formData.mother_band_id}
                       onChange={handleInputChange}
-                      placeholder="Enter mother bird ID"
+                      placeholder="Enter mother band ID"
                       size="lg"
                       borderWidth="2px"
                       borderColor="gray.200"
@@ -364,7 +661,7 @@ export default function EditBirdPage() {
                       transition="all 0.2s"
                     />
                     <Text fontSize="xs" color="gray.500" mt={1}>
-                      ID of the mother bird (if known)
+                      Band ID of the mother bird (if known)
                     </Text>
                   </FormControl>
                 </VStack>

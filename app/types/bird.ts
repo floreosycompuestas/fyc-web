@@ -4,6 +4,8 @@
 export interface Bird {
   id: number;
   band_id: string;
+  bird_year?: number;
+  bird_number?: number;
   name?: string;
   dob?: string;
   sex?: string;

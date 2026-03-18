@@ -27,10 +27,12 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "framer-motion": "^12.23.25",
+    "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
     "next": "^16.1.6",
     "react": "19.2.0",
+    "react-d3-tree": "^3.6.6",
     "react-dom": "19.2.0",
     "react-icons": "^5.5.0"
   },

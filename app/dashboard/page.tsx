@@ -4,10 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Box,
-  Button,
   Container,
   Heading,
-  Stack,
   Text,
   VStack,
   HStack,
@@ -16,9 +14,8 @@ import {
   Spinner,
   Flex,
 } from '@chakra-ui/react';
-import { Stat, StatLabel, StatNumber } from '@chakra-ui/stat';
 import { Card, CardBody } from '@chakra-ui/card';
-import { FiUsers, FiActivity, FiSettings, FiPlus } from 'react-icons/fi';
+import { FiUsers, FiActivity, FiSettings, FiPlus, FiHeart } from 'react-icons/fi';
 import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
 
@@ -297,6 +294,7 @@ export default function DashboardPage() {
                 rounded="lg"
                 borderWidth="1px"
                 borderColor="gray.200"
+                onClick={() => router.push('/profile')}
                 bg="linear-gradient(135deg, teal.50 0%, white 100%)"
               >
                 <CardBody textAlign="center" py={{ base: 6, md: 8 }} px={{ base: 4, md: 5 }}>
@@ -324,19 +322,20 @@ export default function DashboardPage() {
                 </CardBody>
               </Card>
 
-              {/* Help Card */}
+              {/* Breeding Pairs Card */}
               <Card
                 _hover={{
                   boxShadow: 'lg',
                   transform: 'translateY(-4px)',
-                  borderColor: 'orange.300',
+                  borderColor: 'pink.300',
                 }}
                 cursor="pointer"
                 transition="all 0.3s"
                 rounded="lg"
                 borderWidth="1px"
                 borderColor="gray.200"
-                bg="linear-gradient(135deg, orange.50 0%, white 100%)"
+                onClick={() => router.push('/pairs')}
+                bg="linear-gradient(135deg, pink.50 0%, white 100%)"
               >
                 <CardBody textAlign="center" py={{ base: 6, md: 8 }} px={{ base: 4, md: 5 }}>
                   <VStack gap={3}>
@@ -346,17 +345,17 @@ export default function DashboardPage() {
                       align="center"
                       justify="center"
                       borderRadius="lg"
-                      bg="orange.100"
+                      bg="pink.100"
                       boxShadow="sm"
                     >
-                      <Text fontSize="xl" fontWeight="bold" color="orange.600">?</Text>
+                      <Icon as={FiHeart} boxSize={7} color="pink.600" />
                     </Flex>
                     <VStack gap={1}>
                       <Text fontWeight="600" fontSize={{ base: "sm", md: "base" }} color="gray.900">
-                        Help & Docs
+                        Pairs
                       </Text>
                       <Text fontSize="xs" color="gray.600">
-                        Get support
+                        Manage breeding
                       </Text>
                     </VStack>
                   </VStack>

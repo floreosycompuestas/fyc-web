@@ -1,3 +1,4 @@
+#docker build --no-cache -f web.Dockerfile -t fyc-web-prod:latest .
 sudo docker build -f web.Dockerfile -t fyc-web-prod:latest .
 
 sudo docker tag fyc-web-prod rgrullon/fyc-web-prod:latest

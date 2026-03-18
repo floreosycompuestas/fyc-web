@@ -14,12 +14,15 @@ FROM node:20.10-alpine AS deps
 WORKDIR /fyc-web
 COPY package*.json ./
 COPY *.js ./
+COPY *.mjs ./
 RUN npm ci --only=production
 
 FROM node:20.10-alpine AS builder
 WORKDIR /fyc-web
 COPY package*.json ./
 COPY *.js ./
+COPY *.mjs ./
+COPY tsconfig.json ./
 RUN npm ci
 COPY . .
 ENV NEXT_PUBLIC_API_BASE_URL=http://fyc-api-lb.fyc:8000
