@@ -195,8 +195,8 @@ export default function FamilyTreePage() {
 
     let bg: string, border: string, label: string;
     if (isRoot)        { bg = '#EBF8FF'; border = '#3182CE'; label = 'SUBJECT'; }
-    else if (sex==='M'){ bg = '#E0F7FA'; border = '#00838F'; label = 'FATHER';  }
-    else if (sex==='F'){ bg = '#FCE4EC'; border = '#C2185B'; label = 'MOTHER';  }
+    else if (sex==='M'){ bg = '#E0F7FA'; border = '#00838F'; label = 'COCK';    }
+    else if (sex==='F'){ bg = '#FCE4EC'; border = '#C2185B'; label = 'HEN';     }
     else               { bg = '#F7FAFC'; border = '#A0AEC0'; label = 'UNKNOWN'; }
 
     const badgeBg   = sex === 'M' ? '#0369A1' : sex === 'F' ? '#BE185D' : '#64748B';
@@ -270,15 +270,13 @@ export default function FamilyTreePage() {
           stroke={border} strokeWidth={1} opacity={0.35}
         />
 
-        {/* Band ID — clickable */}
+        {/* Band ID */}
         <text
           x={0} y={-H/2+56}
           textAnchor="middle"
           fontSize="15" fontWeight="700"
           fill="#1A365D"
           fontFamily={FONT}
-          style={{ cursor: 'pointer' }}
-          onClick={() => router.push(`/birds/${id}`)}
         >
           {nodeDatum.name}
         </text>
@@ -310,7 +308,7 @@ export default function FamilyTreePage() {
         ) : null}
       </g>
     );
-  }, [selectedBird, setSelectedBird, FONT]);
+  }, [selectedBird, setSelectedBird]);
 
   /* ── loading ── */
   if (isLoading) {
@@ -405,7 +403,7 @@ export default function FamilyTreePage() {
                 <polyline points="4,-6 7,-6 7,-3"/>
               </g>
             </svg>
-            <Text fontSize="xs" color="gray.600">Male</Text>
+            <Text fontSize="xs" color="gray.600">Cock (M)</Text>
           </HStack>
           <HStack gap={2} align="center">
             <svg width="22" height="22" viewBox="-11 -11 22 22" style={{ display: 'block' }}>
@@ -416,7 +414,7 @@ export default function FamilyTreePage() {
                 <line x1="-3.5" y1="5.5" x2="3.5" y2="5.5"/>
               </g>
             </svg>
-            <Text fontSize="xs" color="gray.600">Female</Text>
+            <Text fontSize="xs" color="gray.600">Hen (F)</Text>
           </HStack>
           <Text fontSize="xs" color="gray.400" ml="auto" display={{ base: 'none', md: 'block' }}>
             Click a node to view details · Scroll to zoom · Drag to pan
@@ -468,8 +466,8 @@ export default function FamilyTreePage() {
                   /* colours for the selected bird */
                   let panelBg: string, panelBorder: string, panelLabel: string;
                   if (selectedBird.isRoot)             { panelBg = '#EBF8FF'; panelBorder = '#3182CE'; panelLabel = 'SUBJECT'; }
-                  else if (selectedBird.sex === 'M')   { panelBg = '#E0F7FA'; panelBorder = '#00838F'; panelLabel = 'FATHER';  }
-                  else if (selectedBird.sex === 'F')   { panelBg = '#FCE4EC'; panelBorder = '#C2185B'; panelLabel = 'MOTHER';  }
+                  else if (selectedBird.sex === 'M')   { panelBg = '#E0F7FA'; panelBorder = '#00838F'; panelLabel = 'COCK';    }
+                  else if (selectedBird.sex === 'F')   { panelBg = '#FCE4EC'; panelBorder = '#C2185B'; panelLabel = 'HEN';     }
                   else                                 { panelBg = '#F7FAFC'; panelBorder = '#A0AEC0'; panelLabel = 'UNKNOWN'; }
                   const badgeBg = selectedBird.sex === 'M' ? '#0369A1' : selectedBird.sex === 'F' ? '#BE185D' : '#64748B';
 
@@ -520,7 +518,7 @@ export default function FamilyTreePage() {
                           <HStack gap={2}>
                             <Box w="8px" h="8px" borderRadius="full" bg={badgeBg} />
                             <Text fontSize="sm" fontWeight="600" color="gray.700">
-                              {selectedBird.sex === 'M' ? 'Male' : selectedBird.sex === 'F' ? 'Female' : 'Unknown'}
+                              {selectedBird.sex === 'M' ? 'Cock' : selectedBird.sex === 'F' ? 'Hen' : 'Unknown'}
                             </Text>
                           </HStack>
                         </Box>
